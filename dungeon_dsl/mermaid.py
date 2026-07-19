@@ -12,7 +12,7 @@ LIGHT_LABEL = {
 def _node_label(room: Room) -> str:
     light = LIGHT_LABEL.get(room.light, "")
     prefix = "▶ " if room.entrance else ""
-    return f"{room.id}[\"{prefix}{light} {room.name}\"]"
+    return f'{room.id}["{prefix}{light} {room.name}"]'
 
 
 def _edge_key(a: str, b: str) -> tuple[str, str]:

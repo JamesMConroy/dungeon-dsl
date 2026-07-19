@@ -15,7 +15,9 @@ class Door(BaseModel):
     @model_validator(mode="after")
     def check_direction(self) -> Door:
         if self.direction not in DIRECTIONS:
-            raise ValueError(f"invalid direction {self.direction!r}, expected one of {sorted(DIRECTIONS)}")
+            raise ValueError(
+                f"invalid direction {self.direction!r}, expected one of {sorted(DIRECTIONS)}"
+            )
         return self
 
 
@@ -82,8 +84,7 @@ class Dungeon(BaseModel):
                     stack.append(neighbor)
 
         unreachable = [
-            r.id for r in self.rooms
-            if r.id not in seen and not by_id[r.id].isolation
+            r.id for r in self.rooms if r.id not in seen and not by_id[r.id].isolation
         ]
         if unreachable:
             raise ValueError(f"rooms unreachable from entrance: {sorted(unreachable)}")

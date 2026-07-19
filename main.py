@@ -5,10 +5,12 @@ import yaml
 from pydantic import ValidationError
 
 from dungeon_dsl.mermaid import render_mermaid
+from dungeon_dsl.svg import render_svg
 from dungeon_dsl.models import Dungeon
 
 RENDERERS = {
     "mermaid": render_mermaid,
+    "svg": render_svg,
 }
 
 
@@ -16,7 +18,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render a dungeon YAML file")
     parser.add_argument("dungeon", help="path to dungeon YAML file")
     parser.add_argument(
-        "-f", "--format",
+        "-f",
+        "--format",
         choices=sorted(RENDERERS),
         default="mermaid",
         help="output format (default: mermaid)",
