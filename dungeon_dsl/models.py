@@ -4,13 +4,6 @@ from pydantic import BaseModel, Field, model_validator
 
 DIRECTIONS = {"n", "s", "e", "w", "ne", "nw", "se", "sw"}
 
-OPPOSITE = {
-    "n": "s", "s": "n",
-    "e": "w", "w": "e",
-    "ne": "sw", "sw": "ne",
-    "nw": "se", "se": "nw",
-}
-
 
 class Door(BaseModel):
     target: str

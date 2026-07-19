@@ -37,7 +37,7 @@ def render_mermaid(dungeon: Dungeon) -> str:
                 continue
             seen_edges.add(key)
 
-            label = f"{door.direction}/{door.type}/{door.state}"
+            label = f"{door.type}/{door.state}"
             if door.type == "secret":
                 label += " 🔒"
             lines.append(f"    {room.id} -->|{label}| {door.target}")
