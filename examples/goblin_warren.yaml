@@ -1,0 +1,82 @@
+name: "Goblin Warren"
+level: 1
+theme: "goblin_lair"
+rooms:
+  - id: entrance
+    name: "Grand Hall"
+    description: "A cavernous chamber with a vaulted ceiling. Bones litter the floor."
+    size: large
+    terrain: stone_floor
+    light: dim
+    entrance: true
+    exits:
+      - target: corridor_north
+        direction: n
+        type: archway
+        state: open
+      - target: treasure_room
+        direction: e
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: corridor_north
+    name: "North Passage"
+    description: "A narrow tunnel. Torches flicker. Fresh air suggests openness ahead."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: entrance
+        direction: s
+        type: archway
+        state: open
+      - target: throne_room
+        direction: n
+        type: wooden
+        state: locked
+        dc: 12
+
+  - id: throne_room
+    name: "Goblin Throne"
+    description: "A grand chamber with a crude throne of piled bones."
+    size: large
+    terrain: stone_floor
+    light: bright
+    exits:
+      - target: corridor_north
+        direction: s
+        type: wooden
+        state: locked
+        dc: 12
+      - target: escape_tunnel
+        direction: n
+        type: secret
+        state: closed
+        dc: 15
+
+  - id: treasure_room
+    name: "Storage Chamber"
+    description: "Barrels and crates stacked haphazardly."
+    size: medium
+    terrain: dirt
+    light: dark
+    exits:
+      - target: entrance
+        direction: w
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: escape_tunnel
+    name: "Hidden Escape Route"
+    description: "A narrow natural cavern. Water drips from the ceiling."
+    size: small
+    terrain: water
+    light: dark
+    exits:
+      - target: throne_room
+        direction: s
+        type: secret
+        state: closed
+        dc: 15

@@ -1,0 +1,4 @@
+[tools]
+just = "latest"
+mermaid-ascii = "latest"
+"npm:@mermaid-js/mermaid-cli" = "latest"
