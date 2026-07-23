@@ -1,3 +1,6 @@
+example-svg:
+  uv run main.py examples/goblin_warren.yaml -f svg > out.svg
+
 flowchart-ascii:
   uv run main.py examples/goblin_warren.yaml | mermaid-ascii -
 

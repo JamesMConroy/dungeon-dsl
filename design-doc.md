@@ -115,7 +115,7 @@ Three outputs:
     - Color nodes by size/light level
     - Dashed lines for secret doors
 
-1. SVG Map
+2. SVG Map
    - Rooms as boxes positioned by size/logical layout
    - Doors as lines between rooms with direction labels (n/s/e/w)
    - Color coding by size (tiny=small, large=big) and light level
@@ -123,11 +123,29 @@ Three outputs:
    - Encounters shown as icons/badges inside room boxes
    - Hover reveals room name and quick stats
 
-2. Room Detail Cards
+3. Room Detail Cards
    - HTML/text view of room description, encounters, treasures, features
    - Formatted for reading aloud (DM perspective)
    - Links to connected rooms
    - Encounter stat blocks (name, quantity, CR, notes)
+
+4. Interactive HTML view (planned)
+   - Embed the SVG inline in the HTML DOM — never via <img>, which strips
+     all hover/click interactivity
+   - render_room stamps class="room" and data-room-id={room.id} on each
+     room's <g>
+   - Hover: pure CSS (.room:hover rect { fill: ... }); pointer-events: none
+     on the hatch group and the number label so the room rect is the sole
+     hit-target (no flicker crossing tick marks)
+   - Click: one delegated listener on the <svg>; e.target.closest('.room')
+     → look up data-room-id → show detail panel
+   - Room details shipped as a <script type="application/json"> blob keyed
+     by room id (not hidden pre-rendered divs)
+   - Legend entries also carry data-room-id → symmetric hover highlight
+     (hover legend line ↔ highlight room)
+   - Standalone out.svg carries its own <style> element, so hover highlight
+     works opening the raw file in a browser; the click/detail panel is
+     HTML-page-only
 
 # EXAMPLE YAML
 

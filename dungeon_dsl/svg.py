@@ -11,6 +11,8 @@ CELL_SIZE = (
 ROOM_X, ROOM_Y = 10, 10
 ROOM_W, ROOM_H = 100, 80
 
+DOOR_WIDTH = 18  # corridor width between rooms
+
 PAD = 24  # breathing room so hatching isn't clipped at the map edges
 LEGEND_WIDTH = 220
 LEGEND_LINE_HEIGHT = 22
@@ -41,8 +43,28 @@ def render_svg(dungeon: Dungeon) -> str:
         },
     )
 
+    # two paint layers: all rock hatching first, then every white floor
+    # rect on top — so stray tick ends can never show inside a room or
+    # corridor, no matter which feature drew them
+    hatch_layer = ET.SubElement(svg, "g", {"stroke": "black", "stroke-linecap": "round"})
+    floor_layer = ET.SubElement(svg, "g")
+
     for placement in lay_out.placements.values():
-        svg.append(render_room(placement, numbers[placement.room.id]))
+        render_room(hatch_layer, floor_layer, placement, numbers[placement.room.id])
+
+    # doors after rooms within the floor layer: the corridor's white rect
+    # erases the wall segments it crosses
+    drawn: set[frozenset[str]] = set()
+    for room in dungeon.rooms:
+        for door in room.exits:
+            key = frozenset((room.id, door.target))
+            if key in drawn:
+                continue
+            drawn.add(key)
+            render_door(
+                hatch_layer, floor_layer,
+                lay_out.placements[room.id], lay_out.placements[door.target], door,
+            )
 
     svg.append(
         render_legend(dungeon, numbers, x=min_x * CELL_SIZE + map_w + PAD, y=min_y * CELL_SIZE)
@@ -64,38 +86,115 @@ def render_legend(dungeon: Dungeon, numbers: dict[str, int], x: float, y: float)
     return g
 
 
-def render_room(placement: Placement, number: int) -> ET.Element:
-    g = ET.Element(
-        "g",
-        {
-            "transform": f"translate({placement.x * CELL_SIZE}, {placement.y * CELL_SIZE})"
-        },
-    )
-
+def render_room(
+    hatch_layer: ET.Element, floor_layer: ET.Element, placement: Placement, number: int
+) -> None:
+    tf = f"translate({placement.x * CELL_SIZE}, {placement.y * CELL_SIZE})"
     rng = random.Random(placement.room.name)
     x0, y0 = ROOM_X, ROOM_Y
     x1, y1 = ROOM_X + ROOM_W, ROOM_Y + ROOM_H
 
-    hatch = ET.SubElement(g, "g", {"stroke": "black", "stroke-linecap": "round"})
+    hatch = ET.SubElement(hatch_layer, "g", {"transform": tf})
     hatch_edge(hatch, x0, y0, x1, y0, 0, -1, rng)
     hatch_edge(hatch, x1, y0, x1, y1, 1, 0, rng)
     hatch_edge(hatch, x0, y1, x1, y1, 0, 1, rng)
     hatch_edge(hatch, x0, y0, x0, y1, -1, 0, rng)
 
-    ET.SubElement(g, "rect", {"x": str(x0), "y": str(y0), "width": str(ROOM_W), "height": str(ROOM_H),
-                              "fill": "white", "stroke": "black", "stroke-width": "2"})
+    floor = ET.SubElement(floor_layer, "g", {"transform": tf})
+    ET.SubElement(floor, "rect", {"x": str(x0), "y": str(y0), "width": str(ROOM_W), "height": str(ROOM_H),
+                                  "fill": "white", "stroke": "black", "stroke-width": "2"})
 
-    text = ET.SubElement(g, "text", {
+    text = ET.SubElement(floor, "text", {
         "x": str(ROOM_X + ROOM_W / 2), "y": str(ROOM_Y + ROOM_H / 2 + 7),
         "text-anchor": "middle", "font-family": FONT,
         "font-style": "italic", "font-size": "20",
     })
     text.text = str(number)
-    return g
 
 
-def render_door(source: Placement, target: Placement, door: Door) -> str:
-    return ""
+def render_door(
+    hatch_layer: ET.Element,
+    floor_layer: ET.Element,
+    source: Placement,
+    target: Placement,
+    door: Door,
+) -> None:
+    cell_dx, cell_dy = target.x - source.x, target.y - source.y
+    if abs(cell_dx) + abs(cell_dy) != 1:
+        return  # diagonal or displaced neighbours: no corridor style yet
+
+    half = DOOR_WIDTH / 2
+    rng = random.Random("-".join(sorted((source.room.id, target.room.id))))
+    hatch = ET.SubElement(hatch_layer, "g")
+    floor = ET.SubElement(floor_layer, "g")
+
+    if cell_dx:  # east/west neighbours: horizontal corridor
+        start = min(source.x, target.x) * CELL_SIZE + ROOM_X + ROOM_W
+        end = max(source.x, target.x) * CELL_SIZE + ROOM_X
+        cy = source.y * CELL_SIZE + ROOM_Y + ROOM_H / 2
+
+        hatch_edge(hatch, start, cy - half, end, cy - half, 0, -1, rng, 0.0)
+        hatch_edge(hatch, start, cy + half, end, cy + half, 0, 1, rng, 0.0)
+
+        ET.SubElement(floor, "rect", {
+            "x": f"{start - 2}", "y": f"{cy - half}",
+            "width": f"{end - start + 4}", "height": f"{DOOR_WIDTH}",
+            "fill": "white",
+        })
+        for side in (-half, half):
+            ET.SubElement(floor, "line", {
+                "x1": f"{start}", "y1": f"{cy + side}",
+                "x2": f"{end}", "y2": f"{cy + side}",
+                "stroke": "black", "stroke-width": "2",
+            })
+        add_door_glyph(floor, door, (start + end) / 2, cy, vertical=False)
+    else:  # north/south neighbours: vertical corridor
+        start = min(source.y, target.y) * CELL_SIZE + ROOM_Y + ROOM_H
+        end = max(source.y, target.y) * CELL_SIZE + ROOM_Y
+        cx = source.x * CELL_SIZE + ROOM_X + ROOM_W / 2
+
+        hatch_edge(hatch, cx - half, start, cx - half, end, -1, 0, rng, 0.0)
+        hatch_edge(hatch, cx + half, start, cx + half, end, 1, 0, rng, 0.0)
+
+        ET.SubElement(floor, "rect", {
+            "x": f"{cx - half}", "y": f"{start - 2}",
+            "width": f"{DOOR_WIDTH}", "height": f"{end - start + 4}",
+            "fill": "white",
+        })
+        for side in (-half, half):
+            ET.SubElement(floor, "line", {
+                "x1": f"{cx + side}", "y1": f"{start}",
+                "x2": f"{cx + side}", "y2": f"{end}",
+                "stroke": "black", "stroke-width": "2",
+            })
+        add_door_glyph(floor, door, cx, (start + end) / 2, vertical=True)
+
+
+def add_door_glyph(g: ET.Element, door: Door, cx: float, cy: float, vertical: bool) -> None:
+    if door.type == "archway":
+        return  # open passage, no glyph
+
+    if door.type == "secret":
+        s = ET.SubElement(g, "text", {
+            "x": f"{cx}", "y": f"{cy + 4}", "text-anchor": "middle",
+            "font-family": FONT, "font-style": "italic", "font-size": "13",
+        })
+        s.text = "S"
+        return
+
+    # physical door: a rectangle straddling the corridor, wider than it
+    across, along = DOOR_WIDTH + 8, 8
+    if vertical:
+        w, h = across, along
+    else:
+        w, h = along, across
+    ET.SubElement(g, "rect", {
+        "x": f"{cx - w / 2}", "y": f"{cy - h / 2}",
+        "width": f"{w}", "height": f"{h}",
+        "fill": "white", "stroke": "black", "stroke-width": "1.5",
+    })
+    if door.state == "locked":
+        ET.SubElement(g, "circle", {"cx": f"{cx}", "cy": f"{cy}", "r": "2", "fill": "black"})
 
 def hatch_edge(
     parent: ET.Element,
@@ -106,6 +205,7 @@ def hatch_edge(
     nx: float,
     ny: float,
     rng: random.Random,
+    overshoot: float = 4.0,
 ) -> None:
     """Scatter short 'hand-drawn' ticks along the outside of an edge
     (nx, ny) -> outward normal
@@ -115,11 +215,11 @@ def hatch_edge(
     dx, dy = (x2 - x1) /edge_len, (y2- y1) / edge_len
 
     spacing, base_len  = 3.2, 15.0
-    clump_t = rng.uniform(-4.0, 0.0)
+    clump_t = rng.uniform(-overshoot, 0.0)
     direction = rng.choice((-1, 1))
     prev_spine = None  # last stroke of the previous clump: (bx, by, ux, uy, length)
 
-    while clump_t < edge_len + 4.0:
+    while clump_t < edge_len + overshoot:
         clump_slant = direction * rng.uniform(0.68, 0.88)
         t = clump_t
         n_ticks = rng.randint(4, 6)
@@ -131,6 +231,9 @@ def hatch_edge(
 
             bx = x1 + dx * t + nx * rng.uniform(-1.5, 0.5)
             by = y1 + dy * t + ny * rng.uniform(-1.5, 0.5)
+
+            if t > edge_len + overshoot:
+                break
 
             if is_spine:
                 tick = base_len * rng.uniform(1.5, 1.9)
