@@ -1,0 +1,21 @@
+name: "Diagonal Test"
+rooms:
+  - id: hub
+    name: "Central Cavern"
+    entrance: true
+    exits:
+      - {target: overlook, direction: ne}
+      - {target: sump, direction: se}
+  - id: overlook
+    name: "Overlook"
+    exits:
+      - {target: hub, direction: sw}
+  - id: sump
+    name: "Sump"
+    exits:
+      - {target: hub, direction: nw}
+      - {target: grotto, direction: e}
+  - id: grotto
+    name: "Grotto"
+    exits:
+      - {target: sump, direction: w}

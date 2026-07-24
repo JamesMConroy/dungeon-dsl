@@ -1,9 +1,8 @@
-import math
-import random
-import xml.etree.ElementTree as ET
-
 from .layout import Placement, compute_layout
 from .models import Door, Dungeon
+import xml.etree.ElementTree as ET
+import math
+import random
 
 CELL_SIZE = (
     140  # px per grid cell — bigger than the 100x80 room so there's room for corridors
@@ -161,93 +160,155 @@ def render_door(
     room_cells: set[tuple[int, int]],
 ) -> None:
     cell_dx, cell_dy = target.x - source.x, target.y - source.y
-    if (cell_dx == 0) == (cell_dy == 0):
-        return  # diagonal or displaced neighbours: no corridor style yet
-    # a straight corridor may span inserted-gap cells, but never a room
-    step = (
-        cell_dx and (1 if cell_dx > 0 else -1),
-        cell_dy and (1 if cell_dy > 0 else -1),
-    )
-    for i in range(1, abs(cell_dx) + abs(cell_dy)):
-        if (source.x + step[0] * i, source.y + step[1] * i) in room_cells:
-            return
+    if cell_dx == 0 and cell_dy == 0:
+        return  # overlapping rooms (layout fallback): nothing sane to draw
 
-    half = DOOR_WIDTH / 2
     rng = random.Random("-".join(sorted((source.room.id, target.room.id))))
+
+    if cell_dx and cell_dy:  # diagonal: L-shaped corridor through a corner cell
+        if abs(cell_dx) != 1 or abs(cell_dy) != 1:
+            return  # knight-move displacement from gap insertion: unroutable
+        margin = 24  # how far door openings sit from the rooms' corners
+
+        if (source.x, target.y) not in room_cells:
+            # vertical-first: leave source's n/s wall, bend, enter target's e/w wall
+            p0 = (
+                source.x * CELL_SIZE
+                + (ROOM_X + ROOM_W - margin if cell_dx > 0 else ROOM_X + margin),
+                source.y * CELL_SIZE + (ROOM_Y + ROOM_H if cell_dy > 0 else ROOM_Y),
+            )
+            p2 = (
+                target.x * CELL_SIZE + (ROOM_X if cell_dx > 0 else ROOM_X + ROOM_W),
+                target.y * CELL_SIZE
+                + (ROOM_Y + margin if cell_dy > 0 else ROOM_Y + ROOM_H - margin),
+            )
+            p1 = (p0[0], p2[1])
+        elif (target.x, source.y) not in room_cells:
+            # horizontal-first: leave source's e/w wall, bend, enter target's n/s wall
+            p0 = (
+                source.x * CELL_SIZE + (ROOM_X + ROOM_W if cell_dx > 0 else ROOM_X),
+                source.y * CELL_SIZE
+                + (ROOM_Y + ROOM_H - margin if cell_dy > 0 else ROOM_Y + margin),
+            )
+            p2 = (
+                target.x * CELL_SIZE
+                + (ROOM_X + margin if cell_dx > 0 else ROOM_X + ROOM_W - margin),
+                target.y * CELL_SIZE + (ROOM_Y if cell_dy > 0 else ROOM_Y + ROOM_H),
+            )
+            p1 = (p2[0], p0[1])
+        else:
+            return  # both corner cells hold rooms: no honest route
+        render_corridor(hatch_layer, floor_layer, door, rng, [p0, p1, p2])
+        return
+
+    # straight: wall-to-wall, may span inserted-gap cells but never a room
+    step_x = 0 if cell_dx == 0 else (1 if cell_dx > 0 else -1)
+    step_y = 0 if cell_dy == 0 else (1 if cell_dy > 0 else -1)
+    for i in range(1, abs(cell_dx) + abs(cell_dy)):
+        if (source.x + step_x * i, source.y + step_y * i) in room_cells:
+            return
+    if cell_dx:
+        a = (
+            min(source.x, target.x) * CELL_SIZE + ROOM_X + ROOM_W,
+            source.y * CELL_SIZE + ROOM_Y + ROOM_H / 2,
+        )
+        b = (max(source.x, target.x) * CELL_SIZE + ROOM_X, a[1])
+    else:
+        a = (
+            source.x * CELL_SIZE + ROOM_X + ROOM_W / 2,
+            min(source.y, target.y) * CELL_SIZE + ROOM_Y + ROOM_H,
+        )
+        b = (a[0], max(source.y, target.y) * CELL_SIZE + ROOM_Y)
+    render_corridor(hatch_layer, floor_layer, door, rng, [a, b])
+
+
+def render_corridor(
+    hatch_layer: ET.Element,
+    floor_layer: ET.Element,
+    door: Door,
+    rng: random.Random,
+    pts: list[tuple[float, float]],
+) -> None:
+    """Draw a corridor along an axis-aligned polyline (2 points = straight,
+    3 = one bend): white floor strip of width DOOR_WIDTH, walls and hatching
+    down both sides, door glyph on the longest segment.
+    """
+    half = DOOR_WIDTH / 2
+    units = []
+    for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+        length = math.hypot(x2 - x1, y2 - y1)
+        units.append(((x2 - x1) / length, (y2 - y1) / length))
+
     hatch = ET.SubElement(hatch_layer, "g")
     floor = ET.SubElement(floor_layer, "g")
 
-    if cell_dx:  # east/west neighbours: horizontal corridor
-        start = min(source.x, target.x) * CELL_SIZE + ROOM_X + ROOM_W
-        end = max(source.x, target.x) * CELL_SIZE + ROOM_X
-        cy = source.y * CELL_SIZE + ROOM_Y + ROOM_H / 2
+    # offset the centerline by +/-half; at a 90-degree bend the mitered
+    # corner is the point offset by both segments' normals at once
+    sides = {}
+    for s in (-1, 1):
+        path = []
+        for i, (x, y) in enumerate(pts):
+            nx = ny = 0.0
+            if i > 0:
+                nx += -units[i - 1][1] * s
+                ny += units[i - 1][0] * s
+            if i < len(units):
+                nx += -units[i][1] * s
+                ny += units[i][0] * s
+            path.append((x + nx * half, y + ny * half))
+        sides[s] = path
+        for i, u in enumerate(units):
+            hatch_edge(
+                hatch,
+                path[i][0],
+                path[i][1],
+                path[i + 1][0],
+                path[i + 1][1],
+                -u[1] * s,
+                u[0] * s,
+                rng,
+            )
 
-        hatch_edge(hatch, start, cy - half, end, cy - half, 0, -1, rng, 0.0)
-        hatch_edge(hatch, start, cy + half, end, cy + half, 0, 1, rng, 0.0)
+    # floor polygon: one offset path out, the other back, with the ends
+    # pushed 2px into the rooms so the wall openings are cut cleanly
+    def extended(path: list[tuple[float, float]]) -> list[tuple[float, float]]:
+        p = list(path)
+        p[0] = (p[0][0] - units[0][0] * 2, p[0][1] - units[0][1] * 2)
+        p[-1] = (p[-1][0] + units[-1][0] * 2, p[-1][1] + units[-1][1] * 2)
+        return p
 
+    ring = extended(sides[1]) + extended(sides[-1])[::-1]
+    ET.SubElement(
+        floor,
+        "polygon",
+        {
+            "points": " ".join(f"{x:.2f},{y:.2f}" for x, y in ring),
+            "fill": "white",
+        },
+    )
+    for s in (-1, 1):
         ET.SubElement(
             floor,
-            "rect",
+            "polyline",
             {
-                "x": f"{start - 2}",
-                "y": f"{cy - half}",
-                "width": f"{end - start + 4}",
-                "height": f"{DOOR_WIDTH}",
-                "fill": "white",
+                "points": " ".join(f"{x:.2f},{y:.2f}" for x, y in sides[s]),
+                "fill": "none",
+                "stroke": "black",
+                "stroke-width": "2",
             },
         )
-        for side in (-half, half):
-            ET.SubElement(
-                floor,
-                "line",
-                {
-                    "x1": f"{start}",
-                    "y1": f"{cy + side}",
-                    "x2": f"{end}",
-                    "y2": f"{cy + side}",
-                    "stroke": "black",
-                    "stroke-width": "2",
-                },
-            )
-        add_door_glyph(floor, door, (start + end) / 2, cy, vertical=False)
-    else:  # north/south neighbours: vertical corridor
-        start = min(source.y, target.y) * CELL_SIZE + ROOM_Y + ROOM_H
-        end = max(source.y, target.y) * CELL_SIZE + ROOM_Y
-        cx = source.x * CELL_SIZE + ROOM_X + ROOM_W / 2
 
-        hatch_edge(hatch, cx - half, start, cx - half, end, -1, 0, rng, 0.0)
-        hatch_edge(hatch, cx + half, start, cx + half, end, 1, 0, rng, 0.0)
-
-        ET.SubElement(
-            floor,
-            "rect",
-            {
-                "x": f"{cx - half}",
-                "y": f"{start - 2}",
-                "width": f"{DOOR_WIDTH}",
-                "height": f"{end - start + 4}",
-                "fill": "white",
-            },
-        )
-        for side in (-half, half):
-            ET.SubElement(
-                floor,
-                "line",
-                {
-                    "x1": f"{cx + side}",
-                    "y1": f"{start}",
-                    "x2": f"{cx + side}",
-                    "y2": f"{end}",
-                    "stroke": "black",
-                    "stroke-width": "2",
-                },
-            )
-        add_door_glyph(floor, door, cx, (start + end) / 2, vertical=True)
+    longest = max(range(len(units)), key=lambda i: math.dist(pts[i], pts[i + 1]))
+    mx = (pts[longest][0] + pts[longest + 1][0]) / 2
+    my = (pts[longest][1] + pts[longest + 1][1]) / 2
+    angle = math.degrees(math.atan2(units[longest][1], units[longest][0]))
+    add_door_glyph(floor, door, mx, my, angle)
 
 
 def add_door_glyph(
-    g: ET.Element, door: Door, cx: float, cy: float, vertical: bool
+    g: ET.Element, door: Door, cx: float, cy: float, angle: float
 ) -> None:
+    """Door marker at (cx, cy); angle is the corridor's direction in degrees."""
     if door.type == "archway":
         return  # open passage, no glyph
 
@@ -267,20 +328,20 @@ def add_door_glyph(
         s.text = "S"
         return
 
-    # physical door: a rectangle straddling the corridor, wider than it
-    across, along = DOOR_WIDTH + 8, 8
-    if vertical:
-        w, h = across, along
-    else:
-        w, h = along, across
+    # physical door: a rectangle straddling the corridor, wider than it,
+    # drawn axis-aligned then rotated to match the corridor's direction
+    grp = ET.SubElement(
+        g, "g", {"transform": f"rotate({angle:.1f}, {cx:.2f}, {cy:.2f})"}
+    )
+    along, across = 8, DOOR_WIDTH + 8
     ET.SubElement(
-        g,
+        grp,
         "rect",
         {
-            "x": f"{cx - w / 2}",
-            "y": f"{cy - h / 2}",
-            "width": f"{w}",
-            "height": f"{h}",
+            "x": f"{cx - along / 2:.2f}",
+            "y": f"{cy - across / 2:.2f}",
+            "width": f"{along}",
+            "height": f"{across}",
             "fill": "white",
             "stroke": "black",
             "stroke-width": "1.5",
@@ -288,7 +349,9 @@ def add_door_glyph(
     )
     if door.state == "locked":
         ET.SubElement(
-            g, "circle", {"cx": f"{cx}", "cy": f"{cy}", "r": "2", "fill": "black"}
+            grp,
+            "circle",
+            {"cx": f"{cx:.2f}", "cy": f"{cy:.2f}", "r": "2", "fill": "black"},
         )
 
 

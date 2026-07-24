@@ -101,4 +101,9 @@ def _blocked_cells(
         elif pa.y == pb.y:
             for x in range(min(pa.x, pb.x) + 1, max(pa.x, pb.x)):
                 cells.add((x, pa.y))
+        elif abs(pa.x - pb.x) == 1 and abs(pa.y - pb.y) == 1:
+            # a diagonal edge renders as an L through one of the two corner
+            # cells; reserve both since the renderer picks at draw time
+            cells.add((pa.x, pb.y))
+            cells.add((pb.x, pa.y))
     return cells
