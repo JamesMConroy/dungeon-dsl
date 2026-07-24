@@ -1,3 +1,10 @@
+list:
+  just -l
+
+examples format="svg":
+  for e in examples/*.yaml ; do uv run main.py $e -f {{format}} > ${e%%\.*}.svg ; done
+
+
 example-svg:
   uv run main.py examples/goblin_warren.yaml -f svg > out.svg
 
