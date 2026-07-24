@@ -1,0 +1,26 @@
+name: "Collision Test"
+rooms:
+  - id: a
+    name: "Hub"
+    entrance: true
+    exits:
+      - {target: b, direction: e}
+      - {target: c, direction: n}
+  - id: b
+    name: "East Wing"
+    exits:
+      - {target: a, direction: w}
+      - {target: d, direction: n}
+  - id: c
+    name: "North Wing"
+    exits:
+      - {target: a, direction: s}
+      - {target: shrine, direction: e}
+  - id: d
+    name: "Vault"
+    exits:
+      - {target: b, direction: s}
+  - id: shrine
+    name: "Shrine"
+    exits:
+      - {target: c, direction: w}

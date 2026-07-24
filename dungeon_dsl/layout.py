@@ -1,7 +1,7 @@
-from dataclasses import dataclass
 from collections import deque
+from dataclasses import dataclass
 
-from .models import Room, Dungeon
+from .models import Dungeon, Room
 
 
 @dataclass
@@ -42,18 +42,63 @@ def compute_layout(dungeon: Dungeon) -> Layout:
 
     assert entrance is not None
 
+    # edges between placed rooms; their straight corridor paths count as
+    # blocked cells so later rooms can't be dropped on top of a corridor
+    edges: list[tuple[str, str]] = []
+
     queue: deque[str] = deque([entrance.id])
     while queue:
         current_id = queue.popleft()
-        current = placements[current_id]
 
         for door in by_id[current_id].exits:
             if door.target in placements:
+                edges.append((current_id, door.target))
                 continue
             dx, dy = DIRECTION_OFFSET[door.direction]
-            ideal_cell = (current.x + dx, current.y + dy)
+
+            # if the ideal cell is taken, insert an empty row/column along
+            # the door's axis to open space: rooms past the contested line
+            # shift by one, previously-adjacent pairs become collinear with
+            # an empty cell between (rendered as a longer corridor)
+            tx, ty = 0, 0
+            for _ in range(len(dungeon.rooms)):
+                current = placements[current_id]
+                tx, ty = current.x + dx, current.y + dy
+                if (tx, ty) not in _blocked_cells(placements, edges):
+                    break
+                if dx:
+                    _insert_gap(placements, "x", tx, dx)
+                else:
+                    _insert_gap(placements, "y", ty, dy)
+
             t = by_id[door.target]
-            placements[t.id] = Placement(room=t, x=ideal_cell[0], y=ideal_cell[1])
-            queue.append(door.target)
+            placements[t.id] = Placement(room=t, x=tx, y=ty)
+            edges.append((current_id, t.id))
+            queue.append(t.id)
 
     return Layout(placements)
+
+
+def _insert_gap(
+    placements: dict[str, Placement], axis: str, coord: int, sign: int
+) -> None:
+    """Shift every room at or past `coord` (in `sign` direction) by one cell."""
+    for p in placements.values():
+        v = getattr(p, axis)
+        if (v - coord) * sign >= 0:
+            setattr(p, axis, v + sign)
+
+
+def _blocked_cells(
+    placements: dict[str, Placement], edges: list[tuple[str, str]]
+) -> set[tuple[int, int]]:
+    cells = {(p.x, p.y) for p in placements.values()}
+    for a, b in edges:
+        pa, pb = placements[a], placements[b]
+        if pa.x == pb.x:
+            for y in range(min(pa.y, pb.y) + 1, max(pa.y, pb.y)):
+                cells.add((pa.x, y))
+        elif pa.y == pb.y:
+            for x in range(min(pa.x, pb.x) + 1, max(pa.x, pb.x)):
+                cells.add((x, pa.y))
+    return cells
