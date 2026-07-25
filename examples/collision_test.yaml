@@ -3,6 +3,7 @@ rooms:
   - id: a
     name: "Hub"
     entrance: true
+    size: large
     exits:
       - {target: b, direction: e}
       - {target: c, direction: n}
@@ -18,9 +19,11 @@ rooms:
       - {target: shrine, direction: e}
   - id: d
     name: "Vault"
+    size: tiny
     exits:
       - {target: b, direction: s}
   - id: shrine
     name: "Shrine"
+    size: small
     exits:
       - {target: c, direction: w}

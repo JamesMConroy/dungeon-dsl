@@ -4,19 +4,109 @@ import xml.etree.ElementTree as ET
 import math
 import random
 
+from typing import Literal
+from collections import Counter
+
 CELL_SIZE = (
     140  # px per grid cell — bigger than the 100x80 room so there's room for corridors
 )
 
 ROOM_X, ROOM_Y = 10, 10
-ROOM_W, ROOM_H = 100, 80
 
-DOOR_WIDTH = 18  # corridor width between rooms
+SIZE_DIMS = {
+    "tiny": (60, 50),
+    "small": (80, 64),
+    "medium": (100, 80),
+    "large": (100, 80),
+    "vast": (100, 80),
+}
+
+CORRIDOR_WIDTHS = {
+    "tiny": 12,
+    "small": 14,
+    "medium": 18,
+    "large": 18,
+    "vast": 18,
+   }
 
 PAD = 24  # breathing room so hatching isn't clipped at the map edges
 LEGEND_WIDTH = 220
 LEGEND_LINE_HEIGHT = 22
 FONT = "Georgia, 'Times New Roman', serif"
+
+Route = Literal["straight", "v-first", "h-first", "skip"]
+
+
+def plan_routes(
+    edges: list[tuple[Placement, Placement, Door]], room_cells: set[tuple[int, int]]
+) -> dict[tuple[str, str], Route]:
+
+    out: dict[tuple[str, str], Route] = {}
+    claims: Counter[tuple[str, str]] = Counter()
+    # Pass 1, for corridors don't have options
+    for source, target, _ in edges:
+        key = (source.room.id, target.room.id)
+        cell_dx, cell_dy = target.x - source.x, target.y - source.y
+
+        if cell_dx == 0 and cell_dy == 0:
+            out[key] = "skip"
+            continue
+        if cell_dx and cell_dy:
+            continue
+
+        step_x = (cell_dx > 0) - (cell_dx < 0)
+        step_y = (cell_dy > 0) - (cell_dy < 0)
+        distance = abs(cell_dx) + abs(cell_dy)
+
+        for i in range(1, distance):
+            if (source.x + step_x * i, source.y + step_y * i) in room_cells:
+                out[key] = "skip"
+                break
+        else:
+            out[key] = "straight"
+            if cell_dx:
+                claims[(source.room.id, "e" if cell_dx > 0 else "w")] += 1
+                claims[(target.room.id, "w" if cell_dx > 0 else "e")] += 1
+            else:
+                claims[(source.room.id, "s" if cell_dy > 0 else "n")] += 1
+                claims[(target.room.id, "n" if cell_dy > 0 else "s")] += 1
+
+    for source, target, _ in edges:
+        key = (source.room.id, target.room.id)
+        if key in out:
+            continue  # already added in pass 1
+        cell_dx, cell_dy = target.x - source.x, target.y - source.y
+
+        if abs(cell_dx) != 1 or abs(cell_dy) != 1:
+            out[key] = "skip"  # knight move displacement 'unroutable'
+            continue
+
+        v_ok = (source.x, target.y) not in room_cells
+        h_ok = (target.x, source.y) not in room_cells
+        v_walls = (
+            (source.room.id, "s" if cell_dy > 0 else "n"),
+            (target.room.id, "w" if cell_dx > 0 else "e"),
+        )
+        h_walls = (
+            (source.room.id, "e" if cell_dx > 0 else "w"),
+            (target.room.id, "n" if cell_dy > 0 else "s"),
+        )
+
+        if not v_ok and not h_ok:
+            out[key] = "skip"
+            continue
+        v_cost = claims[v_walls[0]] + claims[v_walls[1]]
+        h_cost = claims[h_walls[0]] + claims[h_walls[1]]
+        if v_ok and (not h_ok or v_cost <= h_cost):
+            out[key] = "v-first"
+            walls = v_walls
+        else:
+            out[key] = "h-first"
+            walls = h_walls
+        claims[walls[0]] += 1
+        claims[walls[1]] += 1
+
+    return out
 
 
 def render_svg(dungeon: Dungeon) -> str:
@@ -54,24 +144,31 @@ def render_svg(dungeon: Dungeon) -> str:
     for placement in lay_out.placements.values():
         render_room(hatch_layer, floor_layer, placement, numbers[placement.room.id])
 
-    # doors after rooms within the floor layer: the corridor's white rect
-    # erases the wall segments it crosses
     room_cells = {(p.x, p.y) for p in lay_out.placements.values()}
-    drawn: set[frozenset[str]] = set()
+    edges: list[tuple[Placement, Placement, Door]] = []
+    seen: set[frozenset[str]] = set()
+
     for room in dungeon.rooms:
         for door in room.exits:
             key = frozenset((room.id, door.target))
-            if key in drawn:
+            if key in seen:
                 continue
-            drawn.add(key)
-            render_door(
-                hatch_layer,
-                floor_layer,
-                lay_out.placements[room.id],
-                lay_out.placements[door.target],
-                door,
-                room_cells,
+            seen.add(key)
+            edges.append(
+                (lay_out.placements[room.id], lay_out.placements[door.target], door)
             )
+
+    routes = plan_routes(edges, room_cells)
+
+    for source, target, door in edges:
+        render_door(
+            hatch_layer,
+            floor_layer,
+            source,
+            target,
+            door,
+            routes[(source.room.id, target.room.id)],
+        )
 
     svg.append(
         render_legend(
@@ -107,13 +204,26 @@ def render_legend(
     return g
 
 
+def _room_rect(p: Placement) -> tuple[float, float, float, float]:
+    """Returns (left, top, right, bottom) in world coordinates."""
+    rw, rh = SIZE_DIMS[p.room.size]
+    left = p.x * CELL_SIZE + (CELL_SIZE - rw) / 2
+    top = p.y * CELL_SIZE + (CELL_SIZE - rh) / 2
+    return left, top, left + rw, top + rh
+
+
 def render_room(
     hatch_layer: ET.Element, floor_layer: ET.Element, placement: Placement, number: int
 ) -> None:
-    tf = f"translate({placement.x * CELL_SIZE}, {placement.y * CELL_SIZE})"
+
     rng = random.Random(placement.room.name)
     x0, y0 = ROOM_X, ROOM_Y
-    x1, y1 = ROOM_X + ROOM_W, ROOM_Y + ROOM_H
+    rw, rh = SIZE_DIMS[placement.room.size]
+    x1 = ROOM_X + rw
+    y1 = ROOM_Y + rh
+
+    left, top, _, _ = _room_rect(placement)
+    tf = f"translate({left - ROOM_X}, {top - ROOM_Y})"
 
     hatch = ET.SubElement(hatch_layer, "g", {"transform": tf})
     hatch_edge(hatch, x0, y0, x1, y0, 0, -1, rng)
@@ -128,8 +238,8 @@ def render_room(
         {
             "x": str(x0),
             "y": str(y0),
-            "width": str(ROOM_W),
-            "height": str(ROOM_H),
+            "width": str(rw),
+            "height": str(rh),
             "fill": "white",
             "stroke": "black",
             "stroke-width": "2",
@@ -140,8 +250,8 @@ def render_room(
         floor,
         "text",
         {
-            "x": str(ROOM_X + ROOM_W / 2),
-            "y": str(ROOM_Y + ROOM_H / 2 + 7),
+            "x": str(ROOM_X + rw / 2),
+            "y": str(ROOM_Y + rh / 2 + 7),
             "text-anchor": "middle",
             "font-family": FONT,
             "font-style": "italic",
@@ -157,69 +267,67 @@ def render_door(
     source: Placement,
     target: Placement,
     door: Door,
-    room_cells: set[tuple[int, int]],
+    route: Route,
 ) -> None:
+
+    if route == "skip":
+        return
+
     cell_dx, cell_dy = target.x - source.x, target.y - source.y
-    if cell_dx == 0 and cell_dy == 0:
-        return  # overlapping rooms (layout fallback): nothing sane to draw
 
     rng = random.Random("-".join(sorted((source.room.id, target.room.id))))
 
-    if cell_dx and cell_dy:  # diagonal: L-shaped corridor through a corner cell
-        if abs(cell_dx) != 1 or abs(cell_dy) != 1:
-            return  # knight-move displacement from gap insertion: unroutable
-        margin = 24  # how far door openings sit from the rooms' corners
+    # get the left/top/right/bottom of both rooms
+    sl, st, sr, sb = _room_rect(source)
+    tl, tt, tr, tb = _room_rect(target)
+    width = min(CORRIDOR_WIDTHS[source.room.size], CORRIDOR_WIDTHS[target.room.size])
 
-        if (source.x, target.y) not in room_cells:
-            # vertical-first: leave source's n/s wall, bend, enter target's e/w wall
+    # diagonal: L-shaped corridor through a corner cell
+    if (route == "v-first" or route == "h-first"):
+        sw, sh = SIZE_DIMS[source.room.size]
+        tw, th = SIZE_DIMS[target.room.size]
+        margin = 24
+        if route == "v-first":
             p0 = (
-                source.x * CELL_SIZE
-                + (ROOM_X + ROOM_W - margin if cell_dx > 0 else ROOM_X + margin),
-                source.y * CELL_SIZE + (ROOM_Y + ROOM_H if cell_dy > 0 else ROOM_Y),
+                sr - min(margin, sw / 3) if cell_dx > 0 else sl + min(margin, sw / 3),
+                sb if cell_dy > 0 else st,
             )
             p2 = (
-                target.x * CELL_SIZE + (ROOM_X if cell_dx > 0 else ROOM_X + ROOM_W),
-                target.y * CELL_SIZE
-                + (ROOM_Y + margin if cell_dy > 0 else ROOM_Y + ROOM_H - margin),
+                tl if cell_dx > 0 else tr,
+                tt + min(margin, th / 3) if cell_dy > 0 else tb - min(margin, th / 3),
             )
             p1 = (p0[0], p2[1])
-        elif (target.x, source.y) not in room_cells:
+
+        elif route == "h-first":
             # horizontal-first: leave source's e/w wall, bend, enter target's n/s wall
             p0 = (
-                source.x * CELL_SIZE + (ROOM_X + ROOM_W if cell_dx > 0 else ROOM_X),
-                source.y * CELL_SIZE
-                + (ROOM_Y + ROOM_H - margin if cell_dy > 0 else ROOM_Y + margin),
+                sr if cell_dx > 0 else sl,
+                sb - min(margin, sh / 3) if cell_dy > 0 else st + min(margin, sh / 3),
             )
             p2 = (
-                target.x * CELL_SIZE
-                + (ROOM_X + margin if cell_dx > 0 else ROOM_X + ROOM_W - margin),
-                target.y * CELL_SIZE + (ROOM_Y if cell_dy > 0 else ROOM_Y + ROOM_H),
+                tl + min(margin, tw / 3) if cell_dx > 0 else tr - min(margin, tw / 3),
+                tt if cell_dy > 0 else tb,
             )
             p1 = (p2[0], p0[1])
-        else:
-            return  # both corner cells hold rooms: no honest route
-        render_corridor(hatch_layer, floor_layer, door, rng, [p0, p1, p2])
+
+        render_corridor(hatch_layer, floor_layer, door, rng, [p0, p1, p2], width)
         return
 
     # straight: wall-to-wall, may span inserted-gap cells but never a room
-    step_x = 0 if cell_dx == 0 else (1 if cell_dx > 0 else -1)
-    step_y = 0 if cell_dy == 0 else (1 if cell_dy > 0 else -1)
-    for i in range(1, abs(cell_dx) + abs(cell_dy)):
-        if (source.x + step_x * i, source.y + step_y * i) in room_cells:
-            return
     if cell_dx:
-        a = (
-            min(source.x, target.x) * CELL_SIZE + ROOM_X + ROOM_W,
-            source.y * CELL_SIZE + ROOM_Y + ROOM_H / 2,
-        )
-        b = (max(source.x, target.x) * CELL_SIZE + ROOM_X, a[1])
+        west, east = (source, target) if source.x < target.x else (target, source)
+        _, _, wr, _ = _room_rect(west)
+        el, _, _, _ = _room_rect(east)
+        a = (wr, (st + sb) / 2)
+        b = (el, a[1])
     else:
-        a = (
-            source.x * CELL_SIZE + ROOM_X + ROOM_W / 2,
-            min(source.y, target.y) * CELL_SIZE + ROOM_Y + ROOM_H,
-        )
-        b = (a[0], max(source.y, target.y) * CELL_SIZE + ROOM_Y)
-    render_corridor(hatch_layer, floor_layer, door, rng, [a, b])
+        north, south = (source, target) if source.y < target.y else (target, source)
+        _, _, _, nb = _room_rect(north)
+        _, sot, _, _ = _room_rect(south)
+        a = ((sl + sr) / 2, nb)
+        b = (a[0], sot)
+
+    render_corridor(hatch_layer, floor_layer, door, rng, [a, b], width)
 
 
 def render_corridor(
@@ -228,12 +336,13 @@ def render_corridor(
     door: Door,
     rng: random.Random,
     pts: list[tuple[float, float]],
+    width: int,
 ) -> None:
     """Draw a corridor along an axis-aligned polyline (2 points = straight,
-    3 = one bend): white floor strip of width DOOR_WIDTH, walls and hatching
+    3 = one bend): white floor strip of width, walls and hatching
     down both sides, door glyph on the longest segment.
     """
-    half = DOOR_WIDTH / 2
+    half = width / 2
     units = []
     for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
         length = math.hypot(x2 - x1, y2 - y1)
@@ -302,11 +411,11 @@ def render_corridor(
     mx = (pts[longest][0] + pts[longest + 1][0]) / 2
     my = (pts[longest][1] + pts[longest + 1][1]) / 2
     angle = math.degrees(math.atan2(units[longest][1], units[longest][0]))
-    add_door_glyph(floor, door, mx, my, angle)
+    add_door_glyph(floor, door, mx, my, angle, width)
 
 
 def add_door_glyph(
-    g: ET.Element, door: Door, cx: float, cy: float, angle: float
+    g: ET.Element, door: Door, cx: float, cy: float, angle: float, width: int
 ) -> None:
     """Door marker at (cx, cy); angle is the corridor's direction in degrees."""
     if door.type == "archway":
@@ -333,7 +442,7 @@ def add_door_glyph(
     grp = ET.SubElement(
         g, "g", {"transform": f"rotate({angle:.1f}, {cx:.2f}, {cy:.2f})"}
     )
-    along, across = 8, DOOR_WIDTH + 8
+    along, across = 8, width + 8
     ET.SubElement(
         grp,
         "rect",

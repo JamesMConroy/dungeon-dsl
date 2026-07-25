@@ -86,7 +86,7 @@ Feature
 
 TreasureItem
   name: string
-  quantity: int (default 1)
+ quantity: int (default 1)
   rarity: "common" | "uncommon" | "rare" | "very_rare" | "legendary"
 
 ## VALIDATION RULES
@@ -130,24 +130,24 @@ Three outputs:
    - Encounter stat blocks (name, quantity, CR, notes)
 
 4. Interactive HTML view (planned)
-   - Embed the SVG inline in the HTML DOM — never via <img>, which strips
+   - Embed the SVG inline in the HTML DOM — never via `<img>`, which strips
      all hover/click interactivity
    - render_room stamps class="room" and data-room-id={room.id} on each
-     room's <g>
+     room's `<g>`
    - Hover: pure CSS (.room:hover rect { fill: ... }); pointer-events: none
      on the hatch group and the number label so the room rect is the sole
      hit-target (no flicker crossing tick marks)
-   - Click: one delegated listener on the <svg>; e.target.closest('.room')
+   - Click: one delegated listener on the `<svg>`; e.target.closest('.room')
      → look up data-room-id → show detail panel
-   - Room details shipped as a <script type="application/json"> blob keyed
+   - Room details shipped as a `<script type="application/json">` blob keyed
      by room id (not hidden pre-rendered divs)
    - Legend entries also carry data-room-id → symmetric hover highlight
      (hover legend line ↔ highlight room)
-   - Standalone out.svg carries its own <style> element, so hover highlight
+   - Standalone out.svg carries its own `<style>` element, so hover highlight
      works opening the raw file in a browser; the click/detail panel is
      HTML-page-only
 
-# EXAMPLE YAML
+## EXAMPLE YAML
 
 ``` yaml
 type: dungeon
@@ -294,6 +294,62 @@ Entrance → Treasure Room
 Throne Room → Escape Tunnel
 
 All rooms connected. Graph is acyclic. Valid.
+
+## ROOM SIZES (implementation notes)
+
+Phase 1 — sub-cell sizes (in progress)
+  - SIZE_DIMS lookup: size string -> (w, h) px within one cell.
+    Must cover every schema value incl. "vast" (Room.size is an
+    unvalidated string; a missing key is a render-time KeyError).
+    large/vast stay placeholders until multi-cell lands.
+  - Center rooms in their cells: offset = (CELL - w) / 2 per axis.
+    Then every room's midline is CELL/2 on both axes, so corridor
+    coordinates stay constant across size pairs. Without centering,
+    corridors must aim at the overlap interval of the two facing wall
+    spans (source midline alone can miss a smaller target's wall).
+  - Door math must resolve ROLES per axis, not min/max coordinates:
+    "west room's east wall" needs the west room's dims, and either
+    endpoint can be the west room. Applies to straight + diagonal.
+  - Diagonal L margins: clamp corner offset to min(24, w/3) so small
+    walls keep a sane opening window.
+
+Phase 2 — multi-cell footprints
+  - Placement grows w, h in cells; blocked-cells becomes rect checks.
+  - Door anchor picks the footprint column/row nearest the target;
+    corridors center on the SHARED span of the two facing walls.
+  - THE TRAP: _insert_gap assumes 1x1 rooms (nothing can straddle an
+    insertion line). A 2x2 room across the line breaks the "freed
+    column is clear" invariant. Escalation ladder:
+      1. pick an insertion line that cuts no footprint (may need the
+         other axis, or two lines)
+      2. shift straddlers too; bounded retry loop re-checks the cell
+      3. real rect-packing with adjacency constraints (last resort)
+    Corridor-path and diagonal corner reservations get the same
+    straddle question.
+
+## COMPACT MAPS (implementation notes)
+
+  - Inter-room distance is currently an accident of constants:
+    CELL(140) - room(100x80) = 40px horizontal / 60px vertical gaps.
+    Invert it: gap becomes the configured value, cell pitch derived
+    per axis (cell_w = room_w + gap, cell_h = room_h + gap).
+  - Config surface: RenderOptions dataclass (also the future home of
+    room dims, DOOR_WIDTH, hatch params) exposed via a YAML `style:`
+    block on the dungeon. Compactness is authorial: it belongs in the
+    shared artifact, not a CLI flag.
+  - The two-layer paint order (hatch under floors) already handles
+    gap -> 0: interior rock disappears under adjacent floors and
+    hatching survives only on the exterior perimeter. No
+    "which walls are exterior" computation needed.
+  - Flush-door mode: below a small gap threshold (~4px) a corridor
+    degenerates; render a doorway instead (DOOR_WIDTH white punch
+    through the shared wall + glyph). Also guards the div-by-zero in
+    render_corridor / hatch_edge on zero-length edges.
+  - At gap 0 the shared wall is two 2px strokes = 4px chunky wall;
+    ship it (classic look) before inventing shared-wall dedup.
+  - Small nonzero gaps: straight corridors become stubs (fine, reads
+    as a thick doorway); scale diagonal L margins with gap when it
+    looks cramped, not before.
 
 ## IMPLEMENTATION CHECKLIST
 

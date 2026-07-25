@@ -5,8 +5,8 @@ import yaml
 from pydantic import ValidationError
 
 from dungeon_dsl.mermaid import render_mermaid
-from dungeon_dsl.svg import render_svg
 from dungeon_dsl.models import Dungeon
+from dungeon_dsl.svg import render_svg
 
 RENDERERS = {
     "mermaid": render_mermaid,
