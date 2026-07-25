@@ -2,20 +2,56 @@ name: "Diagonal Test"
 rooms:
   - id: hub
     name: "Central Cavern"
+    size: small
     entrance: true
     exits:
       - {target: overlook, direction: ne}
       - {target: sump, direction: se}
   - id: overlook
     name: "Overlook"
+    size: tiny
     exits:
       - {target: hub, direction: sw}
   - id: sump
     name: "Sump"
+    size: small
     exits:
       - {target: hub, direction: nw}
       - {target: grotto, direction: e}
   - id: grotto
     name: "Grotto"
+    size: tiny
     exits:
       - {target: sump, direction: w}
+      - {target: closet, direction: e}
+
+  # crowded-wall demo: the closet's n/s neighbours occupy both diagonal
+  # corridors' vertical-first corner cells, forcing BOTH Ls out of the
+  # tiny east wall (50px tall) — their openings overlap
+  - id: closet
+    name: "Cramped Closet"
+    size: tiny
+    exits:
+      - {target: grotto, direction: w}
+      - {target: gallery_n, direction: n}
+      - {target: airshaft, direction: ne}
+      - {target: gallery_s, direction: s}
+      - {target: boltholes, direction: se}
+  - id: gallery_n
+    name: "Upper Gallery"
+    exits:
+      - {target: closet, direction: s}
+  - id: airshaft
+    name: "Airshaft"
+    size: tiny
+    exits:
+      - {target: closet, direction: sw}
+  - id: gallery_s
+    name: "Lower Gallery"
+    exits:
+      - {target: closet, direction: n}
+  - id: boltholes
+    name: "Boltholes"
+    size: tiny
+    exits:
+      - {target: closet, direction: nw}

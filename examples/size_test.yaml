@@ -1,0 +1,43 @@
+name: "Size Test"
+# One of every room size, connected by straight corridors (both axes,
+# mixed size pairs) and both L orientations:
+#   - hall->vestry (ne) is corner-forced h-first (chapel blocks v-first)
+#   - hall->oubliette (se) picks v-first via wall claims
+rooms:
+  - id: hall
+    name: "Great Hall"
+    size: vast
+    entrance: true
+    exits:
+      - {target: barracks, direction: w, type: archway, state: open}
+      - {target: chapel, direction: n}
+      - {target: vestry, direction: ne}
+      - {target: oubliette, direction: se, type: secret, state: hidden}
+  - id: barracks
+    name: "Barracks"
+    size: large
+    exits:
+      - {target: hall, direction: e, type: archway, state: open}
+  - id: chapel
+    name: "Chapel"
+    size: medium
+    exits:
+      - {target: hall, direction: s}
+      - {target: vestry, direction: e, state: locked, dc: 12}
+  - id: vestry
+    name: "Vestry"
+    size: small
+    exits:
+      - {target: chapel, direction: w, state: locked, dc: 12}
+      - {target: hall, direction: sw}
+      - {target: scriptorium, direction: e}
+  - id: oubliette
+    name: "Oubliette"
+    size: tiny
+    exits:
+      - {target: hall, direction: nw, type: secret, state: hidden}
+  - id: scriptorium
+    name: "Scriptorium"
+    size: tiny
+    exits:
+      - {target: vestry, direction: w}
