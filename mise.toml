@@ -1,5 +1,9 @@
 [tools]
+hk = "latest"
 just = "latest"
 mermaid-ascii = "latest"
 "npm:@mermaid-js/mermaid-cli" = "latest"
 watchexec = "latest"
+
+[tasks.pre-commit]
+run = "hk run pre-commit"
