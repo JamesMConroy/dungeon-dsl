@@ -1,0 +1,30 @@
+          dc: 1
+      - target: 
+        direction: n
+        direction: e
+        direction: s
+        direction: w
+        type: archway
+        type: secret
+        type: wooden
+        state: locked
+        state: closed
+        state: open
+    exits:
+    entrance: true
+    light: bright
+    light: dark
+    light: dim
+    terrain: water
+    terrain: dirt
+    terrain: stone_floor
+    size: small
+    size: medium
+    size: large
+    description: "A 
+    name: "
+  - id: 
+rooms:
+theme: "
+level: 1
+name: "

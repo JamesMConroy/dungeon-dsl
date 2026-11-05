@@ -1,0 +1,1794 @@
+name: "Prose 100"
+level: 2
+theme: "crypt"
+rooms:
+  - id: room_0
+    name: "Perisinusitis Peristeronic"
+    description: "Placentalia barracan gemuti eupractic starchedly tula profuse porcupinish acemetic limpin thalassography heathberry."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_1
+        direction: s
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: room_1
+    name: "Gangliar Hypothesist"
+    description: "Saya sogdianian paut unbashful postbuccal teasler misinterpreter fivepins sylvanize copestone introinflection unbloodied melia pulveraceous sylvanize anagoge distributary."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_0
+        direction: n
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_2
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_2
+    name: "Diethylstilbestrol Planimetrical"
+    description: "Beeishness assessably rectigraph parasphenoidal dorcatherium launder unrobe museless hold ophiophagous tipproof pyranometer xylopia."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_1
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_3
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_3
+    name: "Blastocheme Unseasoned"
+    description: "Redub hold joulemeter glycosuric perceval aimless allen axmanship otherdom phytomonadina poemlet."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_2
+        direction: s
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_4
+        direction: s
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_4
+    name: "Carcinosis Epicyte"
+    description: "Gullyhole peplum unstacked gismondite deb remedilessness tactfully importunateness perioptic linguatuline appendicular bargainer offendedly unreproaching inangulate overstimulation inapparent hymenopterological presidio."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_3
+        direction: w
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_5
+        direction: e
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_5
+    name: "Concremation Nostoc"
+    description: "Unskimmed tensilely infracanthal separata ungilded cubbing postintestinal bacteriologist immember anoestrum zoologicoarchaeologist spirobranchiata protephemeroid fivepins prolusion spreadation."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_4
+        direction: n
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_6
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_6
+    name: "Numismatic Nontheatrical"
+    description: "Structuralization pinheaded cocco uphelm subappressed elachistaceous priorly fanega parcook honeyflower semicollegiate esophagomycosis."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_5
+        direction: n
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_7
+        direction: w
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: room_7
+    name: "Homoousianism Frontage"
+    description: "Converted cotingoid keleh megalichthyidae guido anchises paiute capernaitic fauces blitzkrieg sclerenchymatous."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_6
+        direction: s
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_8
+        direction: s
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_8
+    name: "Sanctionable Noncrucial"
+    description: "Interplant pasha polypapilloma andronitis breastplow xeromenia minus appomatox phyllophyte rapacious calyptoblastea sleeveful profuse malidentification amyous decagramme pollincture sinklike diminishment."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_7
+        direction: n
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_9
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_9
+    name: "Banns Clarify"
+    description: "Obstetrical bridesmaid supplial paiute standish exultance corner pseudomorphous jargonist hypophare disserviceable granulate tovaria unmiracled heteromyaria."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_8
+        direction: w
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_10
+        direction: w
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_10
+    name: "Pedagogics Zoilism"
+    description: "Naphthylaminesulphonic wawah ethylamine anglicize physiologus steadyish achitophel chazy."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_9
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_11
+        direction: n
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_11
+    name: "Triaene Bathymetry"
+    description: "Disserviceable evolutionary pugh sulphopropionic alginate goonie ostracophorous fowl hogget dubby hydroforming appendicular wireweed panthelematism."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_10
+        direction: w
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_12
+        direction: w
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: room_12
+    name: "Showman Steep"
+    description: "Brachyskelic stertoriously anchoritic protephemeroid boschveld pollincture folding prosectorial misinterpreter xylopia increscent tithe."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_11
+        direction: n
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_13
+        direction: w
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_13
+    name: "Astoundable Centgener"
+    description: "Outwake cangan vanner palaeoniscid flaxseed polypapilloma cratemaking womanlike steadyish ultravisible cinquain."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_12
+        direction: n
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_14
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_14
+    name: "Genevan Acapu"
+    description: "Ingenerative tupperian sedentariness hautboyist stultioquy steep hydrofuge actiniform phocodontia saya nondendroid joylet dothiorella cheesewood letten jarool rabigenic overbitter autopsychorhythmia monsoonishly."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_13
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_15
+        direction: s
+        type: wooden
+        state: closed
+        dc: 14
+
+  - id: room_15
+    name: "Beggingwise Periglandular"
+    description: "Xenogenous converted embreathement flindosa paleoclimatologist ponderable heterosomata mauri mowie palmigrade decumbency balistes nontheatrical offendedly tensilely zabra cesspool."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_14
+        direction: w
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_16
+        direction: e
+        type: wooden
+        state: closed
+        dc: 14
+
+  - id: room_16
+    name: "Pauciloquy Beeline"
+    description: "Kinetogenesis grantia pacific execrate untaunted glacier disa pithecomorphic displayable antirentism codefendant."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_15
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_17
+        direction: n
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_17
+    name: "Flash Outpeople"
+    description: "Cangan legacy demospongiae herring redub allomerous pneumolysis abidance dollhood shearwater parling preornamental."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_16
+        direction: n
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_18
+        direction: s
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_18
+    name: "Beguin Blatta"
+    description: "Perigloea risberm psychiater ostracophorous dimethylaniline outliver vermeil sauve baneful cotingoid panthelematism capillary cheesewood unregretted thermomagnetic amblyaphia volatilize quitemoca."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_17
+        direction: s
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_19
+        direction: n
+        type: wooden
+        state: closed
+        dc: 9
+
+  - id: room_19
+    name: "Objector Jerksome"
+    description: "Elucubration pugh subpulmonary veridicous pseudofossil titanaugite cannily epimerum pseudographia opsonin insulsity expecter confitent anangular unchangeably zymin lobe."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_18
+        direction: n
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_20
+        direction: n
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_20
+    name: "Factabling Axal"
+    description: "Fag blitter amicable ergatogyne amyous microseismometrograph ceratium essayistic cantoned blitzkrieg creosoter gangliar appendicular."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_19
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_21
+        direction: w
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_21
+    name: "Bovovaccination Unhook"
+    description: "Unprovability octadecanoic ponderable murksome uphelm priced rhipidoglossate fantassin monsoonishly egypt creaturehood."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_20
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_22
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_22
+    name: "Apneal Curbstoner"
+    description: "Classer placentalia folding elb oxybenzaldehyde cardiomyoliposis archjockey nondendroid unskimmed redub."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_21
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_23
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_23
+    name: "Acyloxymethane Crescentwise"
+    description: "Coracoclavicular perceval ornithology serviential genesic moribundly capturable rosland unmiraculously gigantesque cacesthesis tomboy sedentariness."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_22
+        direction: n
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_24
+        direction: s
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_24
+    name: "Dimetallic Footwall"
+    description: "Furry deodorizer mockernut refoundation phyllophyte resplice heartsome pollincture pedanticalness amberoid rounding wench lipoma revolutioneering parling cannily."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_23
+        direction: w
+        type: wooden
+        state: closed
+        dc: 18
+      - target: room_25
+        direction: w
+        type: wooden
+        state: closed
+        dc: 9
+
+  - id: room_25
+    name: "Oscillation Alboin"
+    description: "Inimitable heater sextern superartificial outpeople flavored ebionite alienation confirmatory sheepkill juncaginaceous geggery undername leuciferidae."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_24
+        direction: s
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_26
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_26
+    name: "Hemitery Coextension"
+    description: "Sextern dorcatherium perakim snying biliment archicleistogamous esophagomycosis prosectorial diwata allanitic subpulmonary heathberry dorcatherium executional cesspool polyharmony gerusia synchronical cadwal limpin."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_25
+        direction: e
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_27
+        direction: w
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_27
+    name: "Connaraceae Dayward"
+    description: "Beeline mire multivane unusuality chatterbag auricularia euonymy conservable outwick blissfulness schoolcraft bulldozer postintestinal teanal rect surplician ptyalize telemanometer."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_26
+        direction: w
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_28
+        direction: e
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_28
+    name: "Paragonite Zabra"
+    description: "Aerogenically swingletail hypophonous adminiculate prairielike stevensonian unsuccess unskimmed chitinocalcareous stomata atmospheric tetractinose dewret."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_27
+        direction: s
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_29
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_29
+    name: "Boschveld Metarhyolite"
+    description: "Snowproof bovovaccination stoloniferous renter phyllophyte hierophantic tawdriness crotaloid eupepsia sparnacian unconvoyed codefendant necked gismondite revengeful diagnose peristeronic rhipidoglossate."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_28
+        direction: s
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_30
+        direction: e
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_30
+    name: "Pedro Organonymal"
+    description: "Undeserved jama firework amutter concremation soleyn transversality concresce paiute pantotype blitzkrieg moleism vegetality unfervid mudproof culverin holeless glisteningly subumbrella."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_29
+        direction: w
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_31
+        direction: w
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: room_31
+    name: "Uninnocent Subthrill"
+    description: "Mettle outwick firework hadji sulphopropionic unrobe postintestinal phenomenalism whirler hastily righto antal oscillation bathhouse jerksome sojourn."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_30
+        direction: n
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_32
+        direction: n
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_32
+    name: "Outbleed Calorimetrical"
+    description: "Azodisulphonic womanlike footwall ceratium insubmissive hydropneumothorax subtrochlear graphy homoousianism amphore repulsion."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_31
+        direction: n
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_33
+        direction: s
+        type: wooden
+        state: closed
+        dc: 15
+
+  - id: room_33
+    name: "Counterenergy Pathomania"
+    description: "Cathartes pedro wekau yearth overdistempered pseudoanaphylaxis hypersusceptible strictured soleyn outplod opsonin rotundly unbestowed chazy decile cinnabar."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_32
+        direction: s
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_34
+        direction: n
+        type: wooden
+        state: closed
+        dc: 15
+
+  - id: room_34
+    name: "Scourings Conimene"
+    description: "Unthinker paut petioliventres detinet apneal orangewoman eunomy tartro adrop ritardando uncircularized guerinet luxuriancy."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_33
+        direction: s
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_35
+        direction: w
+        type: wooden
+        state: closed
+        dc: 14
+
+  - id: room_35
+    name: "Beguin Treeship"
+    description: "Scaler vegetality overbusiness complication supersacrifice expendible irene beblear."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_34
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_36
+        direction: w
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_36
+    name: "Counterenergy Bellbind"
+    description: "Redundancy worthfulness brachyskelic kiowa monogynic ancora archicleistogamous transpadane linguatuline triplocaulous pulish unpaunched."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_35
+        direction: w
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_37
+        direction: e
+        type: wooden
+        state: closed
+        dc: 15
+
+  - id: room_37
+    name: "Demospongiae Boschveld"
+    description: "Bridesmaid yieldableness allowable yeshiva procurator judgment perimysial pellile steelware variole intermorainic allanitic persist graphologist palaeoniscid luxuriancy hypercatalectic hocket nonobjective."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_36
+        direction: w
+        type: wooden
+        state: closed
+        dc: 14
+      - target: room_38
+        direction: n
+        type: wooden
+        state: closed
+        dc: 14
+
+  - id: room_38
+    name: "Merchanter Causation"
+    description: "Belonger silliness carya tupperian unguiferous antiabrin roque volsella octoradiate interfollicular misgrowth trollol cryogeny blastocheme tenomyoplasty microsome."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_37
+        direction: s
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_39
+        direction: w
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_39
+    name: "Doctrinalist Orgulous"
+    description: "Crambe contemplable subappressed flagstick curbstoner orthoaxis phaca priorly counterenergy emictory unprovability."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_38
+        direction: w
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_40
+        direction: n
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_40
+    name: "Hairpin Urethratome"
+    description: "Pseudographia lotment fally unorthodox cangan cariousness tonishness argemony bathhouse jaboticaba slowbellied."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_39
+        direction: e
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_41
+        direction: s
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: room_41
+    name: "Obliteration Racily"
+    description: "Siegmund grieshoch decile pacific flack scufflingly coterell servant lemanea glaucophanization."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_40
+        direction: s
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_42
+        direction: s
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_42
+    name: "Stupose Postmedian"
+    description: "Hemichordate firmer intinction lurk glycerate jama diomedea xenogenous sphere pneumatolysis blisterweed pithecomorphic cariousness phyllaurea dramatize diabolepsy autecologically sinklike greenhide wealthy."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_41
+        direction: s
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_43
+        direction: n
+        type: wooden
+        state: closed
+        dc: 9
+
+  - id: room_43
+    name: "Sulfaquinoxaline Appomatox"
+    description: "Velardenite unadapted cimbia beswarm perioecus obfuscation linguatuline chopped langca stenotic factabling reification roque cathartes aghanee cosession semiquietism concremation plaster."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_42
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_44
+        direction: e
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_44
+    name: "Antipepsin Jocularness"
+    description: "Uncircularized frazzle copestone ichnographic panyar novelet unconvoyed genevan pyruloid chimaphila stob dayward."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_43
+        direction: w
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_45
+        direction: n
+        type: wooden
+        state: closed
+        dc: 14
+
+  - id: room_45
+    name: "Mousehole Rapacious"
+    description: "Parcook surculi proclivous flagstick perakim preconsonantal priced nassology."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_44
+        direction: w
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_46
+        direction: w
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_46
+    name: "Durian Pouce"
+    description: "Phaenanthery saltatoric rounding osteogeny perioecus epipterygoid counterthought aerolithology joylet spreadation."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_45
+        direction: e
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_47
+        direction: n
+        type: wooden
+        state: closed
+        dc: 14
+
+  - id: room_47
+    name: "Figurable Beswarm"
+    description: "Unjolted unwhistled squalodont unmixable unsolidified histoclastic alite samite."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_46
+        direction: w
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_48
+        direction: s
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_48
+    name: "Except Dothiorella"
+    description: "Smeuse conimene extraterritorial postclassicism urocoptidae onsetter cyathium outpeople hindberry jocularness supersedable parapetalous seaconny cimbia hairpin favoring unbestowed."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_47
+        direction: s
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_49
+        direction: s
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_49
+    name: "Amphinesian Interfollicular"
+    description: "Fanega margraviate lahontan comedist polygenetic noonlit dothiorella favoring saltimbank insulsity dexiotropic execrate favoring cantoned adaw granulate cinnabar."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_48
+        direction: n
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_50
+        direction: w
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_50
+    name: "Plicatoundulate Glacier"
+    description: "Goddard coronership melanemia antatrophic omniparity outdoors rededuct coff vanner joylet soaking uncatechisedness obstetrical."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_49
+        direction: w
+        type: wooden
+        state: closed
+        dc: 14
+      - target: room_51
+        direction: e
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_51
+    name: "Armful Ergatogyne"
+    description: "Hammersmith soaking inquisitory footrail forecastleman francis scopeless interneuronic pseudocommissure centenarian harvestry cabirean coterell postbuccal."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_50
+        direction: w
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_52
+        direction: s
+        type: wooden
+        state: closed
+        dc: 9
+
+  - id: room_52
+    name: "Preconversion Xenogenous"
+    description: "Odinitic doctrinalist rhipidate pedicelliform doctrinalist credulousness goonie glozingly calamariaceous postmedian sylvanize nonsubscribing brazera unvirtue."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_51
+        direction: w
+        type: wooden
+        state: closed
+        dc: 14
+      - target: room_53
+        direction: s
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_53
+    name: "Subappressed Taurolatry"
+    description: "Pseudomorphous unsubjectlike sorbonne quitemoca postintestinal trigonometrical histoclastic jarool cosession antichretic outbleed unprovability coolen podophthalma cervicicardiac perigeal marlena monsoonishly."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_52
+        direction: e
+        type: wooden
+        state: closed
+        dc: 14
+      - target: room_54
+        direction: e
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_54
+    name: "Rectigraph Cannily"
+    description: "Moribundly nonsubscribing ergal parthenic axmanship granulate marrubium wawah glyptograph playfolk onsetter agapanthus ephelis noncorrosive sialoangitis benthamic appomatox."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_53
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_55
+        direction: w
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_55
+    name: "Tough Mull"
+    description: "Vanner philosophuncule hymenopterological unimpounded alite dissoluble interfulgent pily pyruloid bibulosity."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_54
+        direction: w
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_56
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_56
+    name: "Otherdom Jaboticaba"
+    description: "Guerinet coetaneousness mizzler refoundation postimpressionistic classer grantia rootstock stertoriously fakement nonpredatory eluviate coetaneousness seaconny diomedea overdelighted monobromination upwall fritz."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_55
+        direction: n
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_57
+        direction: w
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_57
+    name: "Objectation Eustomatous"
+    description: "Ancora irene standish annona pupildom andronitis leptocephaly bibulosity prediet hermaphroditic isomera budlet."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_56
+        direction: e
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_58
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_58
+    name: "Scarabaeinae Ammoniation"
+    description: "Wawah execrate pathomania ramulous coutet zoogloeic pilon latian elkuma homeogenic sedentariness."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_57
+        direction: n
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_59
+        direction: w
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_59
+    name: "Paiute Lipoma"
+    description: "Langbeinite structuralization conservable javitero gourd hydroforming kwarta deuce uran playfolk shearwater rheumatiz parcook anoestrum."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_58
+        direction: s
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_60
+        direction: n
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_60
+    name: "Siegmund Ritardando"
+    description: "Gibberish finify amphinesian breastplow channelwards mainspring abidance patine cerianthidae."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_59
+        direction: e
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_61
+        direction: s
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_61
+    name: "Toast Diagnose"
+    description: "Animalia phobism shadowy covado beeishness luganda perceval oophoron ichthyotomous rimester squirish repayment panthelematism amutter outman."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_60
+        direction: w
+        type: wooden
+        state: closed
+        dc: 18
+      - target: room_62
+        direction: w
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_62
+    name: "Interplant Seaconny"
+    description: "Palatinite bathymetry curbstoner unbankable axmanship microsome counteractivity covado ungilded cheddaring epipterygoid brisure typicon eurycerotidae experiencer mousehole."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_61
+        direction: n
+        type: wooden
+        state: closed
+        dc: 18
+      - target: room_63
+        direction: n
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_63
+    name: "Anatomize Antatrophic"
+    description: "Polycephalic undivisive lepas separata loxodograph raspite naphthylaminesulphonic ergatogyne anangular holeless stilpnosiderite unmixable vallevarite corner colorable unhead."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_62
+        direction: s
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_64
+        direction: w
+        type: wooden
+        state: closed
+        dc: 15
+
+  - id: room_64
+    name: "Eden Incriminator"
+    description: "Eden hillwoman locomotor unsolidified phantasmagorially sterics pansexualism bathymetry toxicant militiate irreformability."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_63
+        direction: w
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_65
+        direction: s
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_65
+    name: "Mastologist Capillary"
+    description: "Hydroparacoumaric methanate counterdogmatism quitemoca orangewoman carposporangial penning balow picotite fraternalist mischancy swingletail sarkful palermitan samite thalassography outliver."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_64
+        direction: n
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_66
+        direction: e
+        type: wooden
+        state: closed
+        dc: 15
+
+  - id: room_66
+    name: "Xyloglyphy Dregs"
+    description: "Bubonidae goddard increscent burnbeat vapulation unpatentable investitive ingenerative grisliness."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_65
+        direction: e
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_67
+        direction: n
+        type: wooden
+        state: closed
+        dc: 15
+
+  - id: room_67
+    name: "Leftover Pyruloid"
+    description: "Megaseme mussurana thruthvang amberoid gymnocalycium standish tsessebe coextension beadleism figurable coolen vatter redebit eden manito."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_66
+        direction: s
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_68
+        direction: s
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_68
+    name: "Transcorporeal Ebionite"
+    description: "Shearing mocha accruer tuftlet elb swingletail pecunious undercry pedagogics parasphenoidal undecisive cognizer extrusion stob sinklike fornacic loxodograph epipterygoid remill."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_67
+        direction: n
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_69
+        direction: e
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_69
+    name: "Flaccidly Tenomyoplasty"
+    description: "Panlogical melon fusain saberleg anomoean transcorporeal stercorariidae postclassicism zoogloeic genesic unfunnily postmedian archaeocyathidae capturable unportraited filicites loquaciously."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_68
+        direction: w
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_70
+        direction: e
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_70
+    name: "Misgrowth Unhailable"
+    description: "Axoidean hematomancy thermoresistant rastik paxillosa blatta otoplasty bellmouth shearing polycephalic epipterygoid sparnacian firmer cardamom langca diipenates hermaphroditic."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_69
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_71
+        direction: n
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_71
+    name: "Physicism Pecunious"
+    description: "Risberm regenerator oxidimetric trihemitetartemorion interplant campo interplant subpulmonary alienation glycosuric diabolepsy torqued scourings trichorrhexis nutritiveness trigonometrical unorthodox cellulin covado footwall."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_70
+        direction: e
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_72
+        direction: e
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_72
+    name: "Evolutionary Broadhorn"
+    description: "Velardenite bathymetry swivetty unrousable sleeveful ethylamine frontage auricularia ulcerative lilaeopsis melanoderma erysibe renegotiation keynesianism."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_71
+        direction: e
+        type: wooden
+        state: closed
+        dc: 18
+      - target: room_73
+        direction: w
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_73
+    name: "Preforgive Upwall"
+    description: "Fivepins oversaturate finickingness mixite coercibleness teasler panorpid earthnut."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_72
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_74
+        direction: w
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_74
+    name: "Superoffensive Mesostyle"
+    description: "Forgeful relinquishment mockernut harden malt calorimetrical expendible albinic contusioned glyptograph lemanea amblyaphia restain agalmatolite ophiophagous dissoluble."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_73
+        direction: w
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_75
+        direction: w
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: room_75
+    name: "Friesian Phytomonadina"
+    description: "Executional novelet titanaugite unsmotherable pilon chromonema milcher homeogenic vatter aphidiinae dazzlement tilletiaceous antatrophic diipenates."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_74
+        direction: s
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_76
+        direction: s
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_76
+    name: "Sterics Unbehoving"
+    description: "Drumly pyocele outdoors speedless thruthvang amutter practiced pneumolysis lipoma blatta beeishness transpadane bargainer redondilla exuberantness diminishment unlawlearned tuboovarian."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_75
+        direction: w
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_77
+        direction: e
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_77
+    name: "Confitent Malidentification"
+    description: "Baneful transmarine serbize gourd carbene argemony electrotechnics jukebox overdelighted anangular flywinch blossomhead pinniform hamshackle."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_76
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_78
+        direction: n
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_78
+    name: "Bowla Conspiratorially"
+    description: "Grantia opsonin overdelicate phloroglucin orthoaxis taurolatry undiscursive vulturn umph unconsiderable pancreaticogastrostomy gemuti spherify diesinker winterishly rhipidoglossate rastik linguliferous obituary molly."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_77
+        direction: e
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_79
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_79
+    name: "Blitter Decagramme"
+    description: "Cherishable evolutionary filicites dimethylaniline calcifugous tomtitmouse fibroenchondroma favoring adrop candareen gerusia keleh telegrammatic bookful turbinaceous morbidity prolusion unpervaded."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_78
+        direction: e
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_80
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_80
+    name: "Guerinet Tuboovarian"
+    description: "Tomboy unimpounded outbleed stupose withoutdoors sparnacian supermediocre nonobjective diversionary bisaccate washaki unrobe except salpingostenochoria."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_79
+        direction: e
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_81
+        direction: w
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_81
+    name: "Blastomycete Overstimulation"
+    description: "Remedilessness reactionist ponderable cartilagineous dimethylaniline gourd pasha fauces parasphenoidal urocoptidae subpulmonary umbellately subregent diethylstilbestrol."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_80
+        direction: n
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_82
+        direction: n
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_82
+    name: "Umph Issue"
+    description: "Damageability phloroglucin sogdianian sclerenchymatous unliking blossomhead drab dinglebird sclerenchymatous hadji sportability tanga antiprohibition tzontle disa."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_81
+        direction: s
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_83
+        direction: s
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_83
+    name: "Esophagomycosis Murksome"
+    description: "Synclinorian nonderivable dow parling kingdomless basibranchial legislation diversionary hydropneumothorax grantia bulimic pesticidal."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_82
+        direction: s
+        type: wooden
+        state: closed
+        dc: 9
+      - target: room_84
+        direction: e
+        type: wooden
+        state: closed
+        dc: 18
+
+  - id: room_84
+    name: "Crustification Unkenned"
+    description: "Chirping mull pedanticalness antiphonary deuce soleyn banns authenticity ophiolater."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_83
+        direction: w
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_85
+        direction: e
+        type: wooden
+        state: closed
+        dc: 15
+
+  - id: room_85
+    name: "Marrubium Pentamethylene"
+    description: "Revengeful subderivative niphablepsia rearrangement amyous unfroze dregs apneal egypt deodorizer."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_84
+        direction: n
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_86
+        direction: s
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_86
+    name: "Deviate Hindberry"
+    description: "Bononian carbonylene drawbench archicleistogamous increscent leaden unpleadable atrabilious allen flack teletranscription postmedian sublecturer erasable."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_85
+        direction: w
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_87
+        direction: e
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_87
+    name: "Unhead Nutrify"
+    description: "Crawly interfollicular karyoplasmatic axmanship ultravisible gist unbestowed partnerless."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_86
+        direction: w
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_88
+        direction: n
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_88
+    name: "Peristeronic Interwhile"
+    description: "Octadecanoic hackneyer grimacer unsnagged squirish headlongwise cheddaring one filicites cosession."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_87
+        direction: s
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_89
+        direction: n
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_89
+    name: "Wekau Ergastoplasmic"
+    description: "Enantiopathy pseudonymity sprackly interfulgent postmedian pouce vegetality antipepsin photoengraver ungilded immember outbleed."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_88
+        direction: s
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_90
+        direction: e
+        type: wooden
+        state: closed
+        dc: 9
+
+  - id: room_90
+    name: "Insulsity Isotropy"
+    description: "Proletarize aghanee chromonema langca proprietrix heteronymy umbelloid later."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_89
+        direction: n
+        type: wooden
+        state: closed
+        dc: 18
+      - target: room_91
+        direction: w
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_91
+    name: "Noncrucial Brut"
+    description: "Executional actiniform paiute langca sac uncultivated hydroforming polack hadji."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_90
+        direction: e
+        type: wooden
+        state: closed
+        dc: 15
+      - target: room_92
+        direction: s
+        type: wooden
+        state: closed
+        dc: 14
+
+  - id: room_92
+    name: "Mastologist Siegmund"
+    description: "Shedlike longness isotropy whirler unrefreshed soaking spherify unportraited barbarically plackless addable flebile carnation."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_91
+        direction: n
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_93
+        direction: w
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_93
+    name: "Past Learchus"
+    description: "Novelet sustentational pamphiliidae relight fritz steadyish annona revolutioneering radiographical pseudomorphous coterell supinely dracocephalum spirobranchiata loxodograph."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_92
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_94
+        direction: s
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: room_94
+    name: "Faerie Drumly"
+    description: "Breadearner chromonema pamlico gnathostomata streptococcus serviential megaseme disa outpeople nontheatrical bibulosity ichnographic perjuriously panthelematism tranquil snowproof gemmipara."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_93
+        direction: n
+        type: wooden
+        state: closed
+        dc: 13
+      - target: room_95
+        direction: e
+        type: wooden
+        state: closed
+        dc: 11
+
+  - id: room_95
+    name: "Doctrinalist Azodisulphonic"
+    description: "Selectivity wickedly demospongiae spicular tartramic giro chacker coleopteral adiate neuronophagia prosiliently brisure."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_94
+        direction: n
+        type: wooden
+        state: closed
+        dc: 17
+      - target: room_96
+        direction: w
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_96
+    name: "Leguminosae Coolen"
+    description: "Bellmouth anatomize darts unorthodox amicable bob cathartes eden dimethylaniline."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_95
+        direction: s
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_97
+        direction: w
+        type: wooden
+        state: closed
+        dc: 13
+
+  - id: room_97
+    name: "Spirobranchiata Unperforate"
+    description: "Diagnose rudderhead agapanthus noncoincidence wough nonconduction alterne dromaeognathism toady malign latian."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_96
+        direction: e
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_98
+        direction: e
+        type: wooden
+        state: closed
+        dc: 9
+
+  - id: room_98
+    name: "Ammoniation Semitangent"
+    description: "Unhead onsetter euphonetics telegrammatic lipoma cimbia exculpatorily pedagogics ranatra vegetality steelware revengeful furry formagen."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_97
+        direction: w
+        type: wooden
+        state: closed
+        dc: 11
+      - target: room_99
+        direction: n
+        type: wooden
+        state: closed
+        dc: 17
+
+  - id: room_99
+    name: "Beblear Podophthalma"
+    description: "Cornettist flywinch giro subpulmonary swain headlongwise serviential emictory embryologically polypapilloma anagoge acidulate stearic fowl zymin nontheatrical caunch unfunnily chancefulness."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_98
+        direction: e
+        type: wooden
+        state: closed
+        dc: 12
+

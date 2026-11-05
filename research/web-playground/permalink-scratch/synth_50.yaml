@@ -1,0 +1,968 @@
+name: "Synthetic 50"
+level: 3
+theme: "crypt"
+rooms:
+  - id: room_0
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: stone_floor
+    light: dark
+    entrance: true
+    exits:
+      - target: room_1
+        direction: n
+        type: secret
+        state: locked
+        dc: 8
+
+  - id: room_1
+    name: "Damp Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: dim
+    exits:
+      - target: room_0
+        direction: n
+        type: archway
+        state: closed
+        dc: 12
+      - target: room_2
+        direction: n
+        type: archway
+        state: closed
+        dc: 16
+
+  - id: room_2
+    name: "Collapsed Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_1
+        direction: n
+        type: secret
+        state: locked
+        dc: 10
+      - target: room_3
+        direction: n
+        type: secret
+        state: open
+
+  - id: room_3
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: water
+    light: dim
+    exits:
+      - target: room_2
+        direction: n
+        type: wooden
+        state: locked
+        dc: 14
+      - target: room_4
+        direction: n
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_0
+        direction: n
+        type: secret
+        state: locked
+        dc: 8
+
+  - id: room_4
+    name: "Damp Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_3
+        direction: n
+        type: archway
+        state: closed
+        dc: 8
+      - target: room_5
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_5
+    name: "Vast Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: dirt
+    light: bright
+    exits:
+      - target: room_4
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_6
+        direction: n
+        type: secret
+        state: open
+
+  - id: room_6
+    name: "Collapsed Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: water
+    light: dark
+    exits:
+      - target: room_5
+        direction: n
+        type: wooden
+        state: locked
+        dc: 10
+      - target: room_7
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_7
+    name: "Damp Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: water
+    light: dim
+    exits:
+      - target: room_6
+        direction: n
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_8
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_8
+    name: "Collapsed Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: bright
+    exits:
+      - target: room_7
+        direction: n
+        type: secret
+        state: open
+      - target: room_9
+        direction: n
+        type: secret
+        state: closed
+        dc: 16
+
+  - id: room_9
+    name: "Collapsed Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: dark
+    exits:
+      - target: room_8
+        direction: n
+        type: wooden
+        state: locked
+        dc: 10
+      - target: room_10
+        direction: n
+        type: wooden
+        state: closed
+        dc: 14
+      - target: room_33
+        direction: n
+        type: secret
+        state: closed
+        dc: 8
+
+  - id: room_10
+    name: "Collapsed Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: dim
+    exits:
+      - target: room_9
+        direction: n
+        type: wooden
+        state: open
+      - target: room_11
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_32
+        direction: n
+        type: secret
+        state: locked
+        dc: 14
+
+  - id: room_11
+    name: "Collapsed Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: dirt
+    light: dim
+    exits:
+      - target: room_10
+        direction: n
+        type: archway
+        state: locked
+        dc: 8
+      - target: room_12
+        direction: n
+        type: secret
+        state: locked
+        dc: 14
+      - target: room_20
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_12
+    name: "Damp Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: dirt
+    light: dark
+    exits:
+      - target: room_11
+        direction: n
+        type: secret
+        state: locked
+        dc: 16
+      - target: room_13
+        direction: n
+        type: wooden
+        state: locked
+        dc: 8
+
+  - id: room_13
+    name: "Damp Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: dirt
+    light: dark
+    exits:
+      - target: room_12
+        direction: n
+        type: secret
+        state: closed
+        dc: 10
+      - target: room_14
+        direction: n
+        type: wooden
+        state: open
+
+  - id: room_14
+    name: "Collapsed Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: dirt
+    light: dark
+    exits:
+      - target: room_13
+        direction: n
+        type: wooden
+        state: open
+      - target: room_15
+        direction: n
+        type: wooden
+        state: open
+      - target: room_22
+        direction: n
+        type: secret
+        state: closed
+        dc: 14
+
+  - id: room_15
+    name: "Collapsed Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: dirt
+    light: dark
+    exits:
+      - target: room_14
+        direction: n
+        type: secret
+        state: closed
+        dc: 12
+      - target: room_16
+        direction: n
+        type: archway
+        state: closed
+        dc: 16
+      - target: room_44
+        direction: n
+        type: wooden
+        state: locked
+        dc: 8
+
+  - id: room_16
+    name: "Damp Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: dirt
+    light: dark
+    exits:
+      - target: room_15
+        direction: n
+        type: wooden
+        state: locked
+        dc: 8
+      - target: room_17
+        direction: n
+        type: wooden
+        state: closed
+        dc: 16
+      - target: room_40
+        direction: n
+        type: secret
+        state: locked
+        dc: 8
+
+  - id: room_17
+    name: "Collapsed Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: dark
+    exits:
+      - target: room_16
+        direction: n
+        type: secret
+        state: closed
+        dc: 12
+      - target: room_18
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_18
+    name: "Damp Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: water
+    light: dim
+    exits:
+      - target: room_17
+        direction: n
+        type: secret
+        state: locked
+        dc: 8
+      - target: room_19
+        direction: n
+        type: secret
+        state: closed
+        dc: 10
+      - target: room_46
+        direction: n
+        type: archway
+        state: closed
+        dc: 16
+
+  - id: room_19
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: dirt
+    light: bright
+    exits:
+      - target: room_18
+        direction: n
+        type: secret
+        state: open
+      - target: room_20
+        direction: n
+        type: secret
+        state: closed
+        dc: 8
+      - target: room_10
+        direction: n
+        type: secret
+        state: open
+
+  - id: room_20
+    name: "Collapsed Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: dirt
+    light: dim
+    exits:
+      - target: room_19
+        direction: n
+        type: wooden
+        state: closed
+        dc: 8
+      - target: room_21
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_21
+    name: "Collapsed Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: water
+    light: dark
+    exits:
+      - target: room_20
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_22
+        direction: n
+        type: archway
+        state: locked
+        dc: 10
+      - target: room_2
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_22
+    name: "Damp Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_21
+        direction: n
+        type: secret
+        state: open
+      - target: room_23
+        direction: n
+        type: archway
+        state: open
+      - target: room_16
+        direction: n
+        type: secret
+        state: open
+
+  - id: room_23
+    name: "Damp Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: dirt
+    light: dim
+    exits:
+      - target: room_22
+        direction: n
+        type: archway
+        state: locked
+        dc: 10
+      - target: room_24
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_24
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_23
+        direction: n
+        type: archway
+        state: open
+      - target: room_25
+        direction: n
+        type: secret
+        state: closed
+        dc: 12
+
+  - id: room_25
+    name: "Vast Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: stone_floor
+    light: bright
+    exits:
+      - target: room_24
+        direction: n
+        type: archway
+        state: closed
+        dc: 8
+      - target: room_26
+        direction: n
+        type: secret
+        state: closed
+        dc: 12
+
+  - id: room_26
+    name: "Damp Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_25
+        direction: n
+        type: wooden
+        state: open
+      - target: room_27
+        direction: n
+        type: secret
+        state: open
+      - target: room_42
+        direction: n
+        type: secret
+        state: open
+
+  - id: room_27
+    name: "Vast Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_26
+        direction: n
+        type: archway
+        state: closed
+        dc: 14
+      - target: room_28
+        direction: n
+        type: wooden
+        state: open
+      - target: room_6
+        direction: n
+        type: archway
+        state: locked
+        dc: 8
+
+  - id: room_28
+    name: "Collapsed Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_27
+        direction: n
+        type: secret
+        state: closed
+        dc: 12
+      - target: room_29
+        direction: n
+        type: wooden
+        state: open
+      - target: room_14
+        direction: n
+        type: secret
+        state: locked
+        dc: 10
+
+  - id: room_29
+    name: "Vast Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: water
+    light: bright
+    exits:
+      - target: room_28
+        direction: n
+        type: secret
+        state: locked
+        dc: 14
+      - target: room_30
+        direction: n
+        type: secret
+        state: open
+      - target: room_46
+        direction: n
+        type: wooden
+        state: locked
+        dc: 10
+
+  - id: room_30
+    name: "Vast Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: dirt
+    light: bright
+    exits:
+      - target: room_29
+        direction: n
+        type: archway
+        state: closed
+        dc: 12
+      - target: room_31
+        direction: n
+        type: wooden
+        state: closed
+        dc: 8
+
+  - id: room_31
+    name: "Damp Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_30
+        direction: n
+        type: secret
+        state: closed
+        dc: 12
+      - target: room_32
+        direction: n
+        type: archway
+        state: closed
+        dc: 12
+
+  - id: room_32
+    name: "Damp Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: dirt
+    light: dim
+    exits:
+      - target: room_31
+        direction: n
+        type: wooden
+        state: locked
+        dc: 12
+      - target: room_33
+        direction: n
+        type: secret
+        state: open
+      - target: room_16
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_33
+    name: "Collapsed Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: dirt
+    light: dim
+    exits:
+      - target: room_32
+        direction: n
+        type: archway
+        state: open
+      - target: room_34
+        direction: n
+        type: secret
+        state: closed
+        dc: 10
+      - target: room_30
+        direction: n
+        type: secret
+        state: open
+
+  - id: room_34
+    name: "Collapsed Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: water
+    light: bright
+    exits:
+      - target: room_33
+        direction: n
+        type: wooden
+        state: locked
+        dc: 10
+      - target: room_35
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_35
+    name: "Collapsed Hall"
+    description: "A cold draft whistles through cracks in the wall. Cobwebs hang from every beam."
+    size: small
+    terrain: dirt
+    light: dim
+    exits:
+      - target: room_34
+        direction: n
+        type: secret
+        state: locked
+        dc: 8
+      - target: room_36
+        direction: n
+        type: archway
+        state: open
+
+  - id: room_36
+    name: "Collapsed Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: dirt
+    light: dim
+    exits:
+      - target: room_35
+        direction: n
+        type: wooden
+        state: closed
+        dc: 14
+      - target: room_37
+        direction: n
+        type: secret
+        state: locked
+        dc: 8
+      - target: room_10
+        direction: n
+        type: secret
+        state: closed
+        dc: 8
+
+  - id: room_37
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_36
+        direction: n
+        type: wooden
+        state: open
+      - target: room_38
+        direction: n
+        type: wooden
+        state: open
+      - target: room_2
+        direction: n
+        type: archway
+        state: locked
+        dc: 12
+
+  - id: room_38
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: water
+    light: dim
+    exits:
+      - target: room_37
+        direction: n
+        type: archway
+        state: open
+      - target: room_39
+        direction: n
+        type: wooden
+        state: locked
+        dc: 16
+      - target: room_18
+        direction: n
+        type: archway
+        state: locked
+        dc: 12
+
+  - id: room_39
+    name: "Vast Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: water
+    light: dark
+    exits:
+      - target: room_38
+        direction: n
+        type: secret
+        state: open
+      - target: room_40
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+
+  - id: room_40
+    name: "Collapsed Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: stone_floor
+    light: bright
+    exits:
+      - target: room_39
+        direction: n
+        type: wooden
+        state: closed
+        dc: 12
+      - target: room_41
+        direction: n
+        type: archway
+        state: open
+      - target: room_6
+        direction: n
+        type: wooden
+        state: closed
+        dc: 16
+
+  - id: room_41
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: bright
+    exits:
+      - target: room_40
+        direction: n
+        type: secret
+        state: open
+      - target: room_42
+        direction: n
+        type: wooden
+        state: locked
+        dc: 16
+
+  - id: room_42
+    name: "Vast Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: dim
+    exits:
+      - target: room_41
+        direction: n
+        type: archway
+        state: closed
+        dc: 16
+      - target: room_43
+        direction: n
+        type: archway
+        state: closed
+        dc: 16
+
+  - id: room_43
+    name: "Vast Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_42
+        direction: n
+        type: wooden
+        state: locked
+        dc: 14
+      - target: room_44
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_44
+        direction: n
+        type: wooden
+        state: locked
+        dc: 10
+
+  - id: room_44
+    name: "Collapsed Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: dirt
+    light: bright
+    exits:
+      - target: room_43
+        direction: n
+        type: wooden
+        state: closed
+        dc: 14
+      - target: room_45
+        direction: n
+        type: wooden
+        state: locked
+        dc: 14
+
+  - id: room_45
+    name: "Vast Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: dark
+    exits:
+      - target: room_44
+        direction: n
+        type: archway
+        state: open
+      - target: room_46
+        direction: n
+        type: wooden
+        state: locked
+        dc: 8
+
+  - id: room_46
+    name: "Collapsed Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: dim
+    exits:
+      - target: room_45
+        direction: n
+        type: archway
+        state: open
+      - target: room_47
+        direction: n
+        type: wooden
+        state: locked
+        dc: 10
+      - target: room_2
+        direction: n
+        type: wooden
+        state: locked
+        dc: 16
+
+  - id: room_47
+    name: "Collapsed Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: bright
+    exits:
+      - target: room_46
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+      - target: room_48
+        direction: n
+        type: wooden
+        state: open
+
+  - id: room_48
+    name: "Collapsed Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: bright
+    exits:
+      - target: room_47
+        direction: n
+        type: secret
+        state: closed
+        dc: 10
+      - target: room_49
+        direction: n
+        type: secret
+        state: locked
+        dc: 8
+
+  - id: room_49
+    name: "Collapsed Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: bright
+    exits:
+      - target: room_48
+        direction: n
+        type: wooden
+        state: open
+

@@ -1,0 +1,188 @@
+name: "Synthetic 10"
+level: 3
+theme: "crypt"
+rooms:
+  - id: room_0
+    name: "Gilded Chapel"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: water
+    light: dim
+    entrance: true
+    exits:
+      - target: room_1
+        direction: n
+        type: archway
+        state: open
+      - target: room_8
+        direction: n
+        type: secret
+        state: closed
+        dc: 14
+
+  - id: room_1
+    name: "Vast Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: water
+    light: dim
+    exits:
+      - target: room_0
+        direction: n
+        type: secret
+        state: locked
+        dc: 16
+      - target: room_2
+        direction: n
+        type: secret
+        state: locked
+        dc: 14
+
+  - id: room_2
+    name: "Damp Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: bright
+    exits:
+      - target: room_1
+        direction: n
+        type: archway
+        state: open
+      - target: room_3
+        direction: n
+        type: wooden
+        state: closed
+        dc: 14
+
+  - id: room_3
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_2
+        direction: n
+        type: secret
+        state: closed
+        dc: 16
+      - target: room_4
+        direction: n
+        type: secret
+        state: open
+
+  - id: room_4
+    name: "Damp Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: dirt
+    light: dark
+    exits:
+      - target: room_3
+        direction: n
+        type: wooden
+        state: locked
+        dc: 14
+      - target: room_5
+        direction: n
+        type: wooden
+        state: open
+      - target: room_0
+        direction: n
+        type: secret
+        state: closed
+        dc: 8
+
+  - id: room_5
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: water
+    light: dark
+    exits:
+      - target: room_4
+        direction: n
+        type: archway
+        state: locked
+        dc: 10
+      - target: room_6
+        direction: n
+        type: archway
+        state: locked
+        dc: 14
+      - target: room_0
+        direction: n
+        type: archway
+        state: locked
+        dc: 10
+
+  - id: room_6
+    name: "Vast Gallery"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: stone_floor
+    light: dark
+    exits:
+      - target: room_5
+        direction: n
+        type: archway
+        state: closed
+        dc: 12
+      - target: room_7
+        direction: n
+        type: secret
+        state: open
+
+  - id: room_7
+    name: "Collapsed Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: small
+    terrain: dirt
+    light: dark
+    exits:
+      - target: room_6
+        direction: n
+        type: secret
+        state: open
+      - target: room_8
+        direction: n
+        type: archway
+        state: locked
+        dc: 12
+
+  - id: room_8
+    name: "Damp Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: medium
+    terrain: dirt
+    light: bright
+    exits:
+      - target: room_7
+        direction: n
+        type: archway
+        state: closed
+        dc: 16
+      - target: room_9
+        direction: n
+        type: secret
+        state: locked
+        dc: 10
+      - target: room_2
+        direction: n
+        type: wooden
+        state: closed
+        dc: 10
+
+  - id: room_9
+    name: "Vast Hall"
+    description: "Cobwebs hang from every beam. Cobwebs hang from every beam."
+    size: large
+    terrain: stone_floor
+    light: dim
+    exits:
+      - target: room_8
+        direction: n
+        type: wooden
+        state: open
+
