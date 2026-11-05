@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.13"
 
 [[package]]
@@ -32,17 +32,21 @@ wheels = [
 [[package]]
 name = "dungeon-dsl"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
-    { name = "pyrefly" },
-    { name = "pyright" },
     { name = "pyyaml" },
+]
+
+[package.optional-dependencies]
+cli = [
     { name = "typer" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "dungeon-dsl", extra = ["cli"] },
+    { name = "pyrefly" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "ruff" },
@@ -50,15 +54,16 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "pydantic", specifier = ">=2.13.4" },
-    { name = "pyrefly", specifier = ">=1.1.1" },
-    { name = "pyright", specifier = ">=1.1.411" },
+    { name = "pydantic", specifier = ">=2.12" },
     { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "typer", specifier = ">=0.27.2" },
+    { name = "typer", marker = "extra == 'cli'", specifier = ">=0.27.2" },
 ]
+provides-extras = ["cli"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "dungeon-dsl", extras = ["cli"] },
+    { name = "pyrefly", specifier = ">=1.1.1" },
     { name = "pyright", specifier = ">=1.1.411" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "ruff", specifier = ">=0.15.22" },

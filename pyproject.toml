@@ -1,20 +1,32 @@
 [project]
 name = "dungeon-dsl"
 version = "0.1.0"
-description = "Add your description here"
+description = "YAML DSL for dungeon graphs, validated and rendered to SVG maps"
 readme = "README.md"
 requires-python = ">=3.13"
+# Runtime deps must stay installable in Pyodide 314.0.7 (pydantic 2.12.5, pyyaml 6.0.3).
 dependencies = [
-    "pydantic>=2.13.4",
-    "pyrefly>=1.1.1",
-    "pyright>=1.1.411",
+    "pydantic>=2.12",
     "pyyaml>=6.0.3",
+]
+
+[project.optional-dependencies]
+cli = [
     "typer>=0.27.2",
 ]
 
 [dependency-groups]
 dev = [
+    "dungeon-dsl[cli]",
+    "pyrefly>=1.1.1",
     "pyright>=1.1.411",
     "pytest>=8.0",
     "ruff>=0.15.22",
 ]
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
