@@ -1,0 +1,549 @@
+<!doctype html>
+<!--
+  PROTOTYPE — throwaway. Wayfinder ticket 06 "Playground UX prototype".
+  Three structurally different Playground layouts on one page, switchable via ?variant=A|B|C
+  (bottom bar or ←/→). Rendering goes through server.py (real dungeon_dsl pipeline),
+  standing in for Pyodide. ?coldstart=ms simulates Pyodide boot (default 1500, 0 to skip).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dungeon Playground (prototype)</title>
+<style>
+  :root {
+    --paper: #f6f1e6; --paper-2: #ece4d2; --ink: #1d1a16; --ink-2: #5b5246;
+    --rule: #cfc4ad; --accent: #8a3b12; --hl: #f1dfa8; --sel: #e2b85c;
+    --err: #b3261e; --err-bg: #fbe9e7; --ok: #2e6b3a;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --serif: Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); font: 15px/1.45 var(--serif); }
+  button { font: inherit; cursor: pointer; }
+  #app { height: 100%; }
+
+  /* ---------- shared: editor ---------- */
+  .editor { display: flex; height: 100%; min-height: 0; background: #fffdf8; border: 1px solid var(--rule); font: 13px/1.5 var(--mono); }
+  .gutter { padding: 8px 6px 8px 8px; text-align: right; color: #a99d86; user-select: none; overflow: hidden; white-space: pre; min-width: 3.2em; background: var(--paper-2); }
+  .gutter .bad { color: #fff; background: var(--err); border-radius: 3px; padding: 0 3px; }
+  .editor textarea { flex: 1; border: 0; outline: 0; resize: none; padding: 8px; font: inherit; background: transparent; color: var(--ink); white-space: pre; overflow: auto; tab-size: 2; }
+
+  /* ---------- shared: map ---------- */
+  .map { position: relative; min-height: 0; overflow: hidden; }
+  .map svg { width: 100%; height: 100%; display: block; }
+  .map .room { cursor: pointer; }
+  .map .room rect { transition: fill .12s; }
+  .map .room:hover rect, .map .room.hl rect { fill: var(--hl) !important; }
+  .map .room.sel rect { fill: var(--sel) !important; }
+  .map .legend-entry { cursor: pointer; }
+  .map .legend-entry:hover, .map .legend-entry.hl { fill: var(--accent); text-decoration: underline; }
+  .map.stale svg { opacity: .35; filter: grayscale(1); }
+  .stale-banner { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--err-bg); color: var(--err); border: 1px solid var(--err); padding: 4px 12px; border-radius: 999px; font-size: 13px; display: none; z-index: 2; white-space: nowrap; }
+  .map.stale .stale-banner { display: block; }
+  .boot { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; background: var(--paper); color: var(--ink-2); z-index: 3; }
+  .boot .bar { width: 180px; height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+  .boot .bar i { display: block; height: 100%; width: 0; background: var(--accent); animation: boot var(--boot, 1.5s) linear forwards; }
+  @keyframes boot { to { width: 100%; } }
+
+  /* ---------- shared: errors ---------- */
+  .errors { font: 13px/1.4 var(--mono); }
+  .errors .e { display: block; width: 100%; text-align: left; border: 0; background: var(--err-bg); color: var(--err); padding: 6px 10px; border-left: 3px solid var(--err); margin-bottom: 2px; }
+  .errors .e b { color: var(--ink); font-weight: 600; }
+  .errors .e small { color: var(--ink-2); }
+  .errors .okline { color: var(--ok); padding: 6px 10px; }
+
+  /* ---------- shared: room card ---------- */
+  .card h2 { margin: 0 0 2px; font-size: 22px; }
+  .card h2 .n { color: var(--accent); font-style: italic; margin-right: 6px; }
+  .card .id { font: 12px var(--mono); color: var(--ink-2); }
+  .card .chips { margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px; }
+  .card .chip { font-size: 12px; padding: 1px 8px; border: 1px solid var(--rule); border-radius: 999px; background: #fffdf8; }
+  .card .chip.entrance { border-color: var(--accent); color: var(--accent); }
+  .card .readaloud { margin: 10px 0; padding: 10px 14px; background: #fffdf8; border-left: 3px solid var(--accent); font-style: italic; font-size: 16px; }
+  .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2); margin: 14px 0 4px; }
+  .card ul { margin: 0; padding: 0; list-style: none; }
+  .card li { padding: 3px 0; border-bottom: 1px dotted var(--rule); }
+  .card a { color: var(--accent); cursor: pointer; text-decoration: none; }
+  .card a:hover { text-decoration: underline; }
+  .card .door { color: var(--ink-2); font-size: 13px; }
+  .card .missing { color: var(--ink-2); font-size: 12px; font-style: italic; margin-top: 12px; }
+  .empty { color: var(--ink-2); font-style: italic; }
+
+  .btn { border: 1px solid var(--ink); background: transparent; color: var(--ink); padding: 3px 10px; border-radius: 4px; font-size: 13px; }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  select.btn { cursor: pointer; }
+  .status { font: 12px var(--mono); color: var(--ink-2); }
+  .status .ok { color: var(--ok); } .status .bad { color: var(--err); }
+  .toast { position: fixed; top: 14px; right: 14px; background: var(--ink); color: var(--paper); padding: 6px 12px; border-radius: 6px; font-size: 13px; z-index: 50; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+
+  /* ---------- prototype switcher (not part of the design) ---------- */
+  #switcher { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 8px; background: #111; color: #fff; padding: 6px 8px; border-radius: 999px; box-shadow: 0 6px 24px rgba(0,0,0,.35); font: 13px system-ui, sans-serif; }
+  #switcher button { background: #333; color: #fff; border: 0; width: 28px; height: 28px; border-radius: 50%; }
+  #switcher button:hover { background: #555; }
+  #switcher span { min-width: 190px; text-align: center; }
+
+  /* ---------- Variant A: Workbench ---------- */
+  .A { display: grid; grid-template-rows: auto 1fr; height: 100%; }
+  .A header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--rule); background: var(--paper-2); }
+  .A header h1 { font-size: 17px; margin: 0 10px 0 0; }
+  .A header .status { margin-left: auto; }
+  .A .cols { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(320px, 1.4fr) minmax(260px, .8fr); min-height: 0; }
+  .A .left { display: grid; grid-template-rows: 1fr auto; min-height: 0; border-right: 1px solid var(--rule); }
+  .A .left .errors { max-height: 30vh; overflow: auto; border-top: 1px solid var(--rule); }
+  .A .left .editor { border: 0; }
+  .A .map { border-right: 1px solid var(--rule); padding: 10px; }
+  .A .side { overflow: auto; padding: 16px 18px 80px; }
+  .A .tabs { display: none; }
+  @media (max-width: 900px) {
+    .A { grid-template-rows: auto auto 1fr; }
+    .A .tabs { display: flex; border-bottom: 1px solid var(--rule); }
+    .A .tabs button { flex: 1; border: 0; background: transparent; padding: 8px; border-bottom: 2px solid transparent; }
+    .A .tabs button.on { border-bottom-color: var(--accent); color: var(--accent); }
+    .A .cols { grid-template-columns: 1fr; }
+    .A .cols > * { display: none !important; border: 0; }
+    .A .cols > .on { display: grid !important; }
+    .A .cols > .side.on { display: block !important; }
+  }
+
+  /* ---------- Variant B: Map-first ---------- */
+  .B { position: relative; height: 100%; overflow: hidden; }
+  .B .map { position: absolute; inset: 0; cursor: grab; }
+  .B .map.dragging { cursor: grabbing; }
+  .B .top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 8px; align-items: center; z-index: 5; pointer-events: none; }
+  .B .top > * { pointer-events: auto; }
+  .B .title { font-size: 20px; font-weight: bold; background: rgba(246,241,230,.9); padding: 2px 10px; border-radius: 4px; }
+  .B .top .status { margin-left: auto; background: rgba(246,241,230,.9); padding: 2px 8px; border-radius: 4px; }
+  .B .drawer-btn { position: relative; }
+  .B .badge { position: absolute; top: -7px; right: -7px; background: var(--err); color: #fff; border-radius: 999px; font: 11px system-ui; padding: 1px 6px; display: none; }
+  .B .badge.on { display: block; }
+  .B .drawer { position: absolute; top: 0; bottom: 0; left: 0; width: min(460px, 92vw); background: var(--paper); border-right: 1px solid var(--rule); box-shadow: 6px 0 24px rgba(0,0,0,.12); transform: translateX(-102%); transition: transform .2s; z-index: 10; display: grid; grid-template-rows: auto 1fr auto; }
+  .B .drawer.open { transform: none; }
+  .B .drawer .dh { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+  .B .drawer .dh .x { margin-left: auto; }
+  .B .drawer .editor { border: 0; }
+  .B .drawer .errors { max-height: 28vh; overflow: auto; }
+  .B .pop { position: absolute; z-index: 8; width: 320px; max-width: calc(100vw - 24px); max-height: 60vh; overflow: auto; background: #fffdf8; border: 1px solid var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.2); padding: 14px 16px; border-radius: 6px; display: none; }
+  .B .pop.on { display: block; }
+  .B .pop .close { position: absolute; top: 6px; right: 8px; border: 0; background: transparent; font-size: 18px; }
+  .B .zoom { position: absolute; right: 14px; bottom: 70px; display: flex; flex-direction: column; gap: 4px; z-index: 5; }
+  .B .zoom .btn { width: 32px; height: 32px; padding: 0; background: rgba(246,241,230,.9); }
+  .B .hint { position: absolute; left: 14px; bottom: 70px; font-size: 12px; color: var(--ink-2); z-index: 5; }
+  @media (max-width: 700px) { .B .pop { left: 12px !important; right: 12px; top: auto !important; bottom: 64px; width: auto; } }
+
+  /* ---------- Variant C: Presenter (DM window + audience window) ---------- */
+  .C { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+  .C header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--rule); background: var(--paper-2); flex-wrap: wrap; }
+  .C header h1 { font-size: 17px; margin: 0 10px 0 0; }
+  .C header .conn { margin-left: auto; font: 12px var(--mono); color: var(--ink-2); }
+  .C header .conn.on { color: var(--ok); }
+  .C .body { display: grid; grid-template-columns: 1fr minmax(320px, 420px); min-height: 0; }
+  .C .map { padding: 10px; border-right: 1px solid var(--rule); }
+  .C .map .room.unrevealed rect { fill: #d8d0bf !important; }
+  .C .map .room.unrevealed text { fill: #9a8f7a; }
+  .C .map .room.current rect { fill: var(--sel) !important; }
+  .C .notes { overflow: auto; display: grid; grid-template-rows: auto auto 1fr auto; min-height: 0; }
+  .C .notes section { padding: 12px 16px; border-bottom: 1px solid var(--rule); }
+  .C .notes h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2); margin: 0 0 6px; }
+  .C .goto { display: flex; flex-wrap: wrap; gap: 4px; }
+  .C .goto button { border: 1px solid var(--ink); background: #fffdf8; padding: 3px 9px; border-radius: 4px; font-size: 13px; }
+  .C .goto button:hover { background: var(--ink); color: var(--paper); }
+  .C .goto button.secret { border-style: dashed; }
+  .C .rooms { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; font-size: 14px; align-items: center; }
+  .C .rooms label { cursor: pointer; }
+  .C .rooms .cur { font-weight: bold; color: var(--accent); }
+  .C .preview { height: 200px; position: relative; background: #111; border: 1px solid var(--ink); }
+  .C .preview .map { height: 100%; padding: 4px; border: 0; }
+  .card .secret-tag { font: 11px system-ui; color: #fff; background: var(--ink); padding: 0 5px; border-radius: 3px; margin-left: 4px; }
+  @media (max-width: 800px) { .C .body { grid-template-columns: 1fr; grid-template-rows: 45vh auto; } }
+
+  /* audience window */
+  body.audience { background: #0e0d0b; color: #efe6d2; }
+  body.audience #switcher { display: none; }
+  .AUD { height: 100%; display: grid; grid-template-rows: 1fr auto; }
+  .AUD .map { padding: 24px; }
+  .AUD .map .room { cursor: default; }
+  .AUD .map .room.current rect { fill: #f3e2b0 !important; }
+  .AUD .caption { text-align: center; padding: 10px 0 22px; font-size: 34px; letter-spacing: .02em; min-height: 76px; }
+  .AUD .caption small { display: block; font-size: 14px; color: #a39a86; letter-spacing: .2em; text-transform: uppercase; }
+  .AUD .waiting { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #8b8270; font-size: 20px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<div id="switcher">
+  <button id="prev" title="previous (←)">‹</button><span id="vlabel"></span><button id="next" title="next (→)">›</button>
+</div>
+
+<script>
+/* ======================= shared core ======================= */
+const params = new URLSearchParams(location.search);
+const VARIANTS = { A: "Workbench (3-pane IDE)", B: "Map-first (drawer + popover)", C: "Presenter (DM + audience window)" };
+const KEYS = Object.keys(VARIANTS);
+const variant = KEYS.includes(params.get("variant")) ? params.get("variant") : "A";
+const COLD = Number(params.get("coldstart") ?? 1500);
+
+const S = { yaml: "", result: null, good: null, selected: null, examples: {}, seq: 0, booted: false, onUpdate: [] };
+const $ = (sel, el = document) => el.querySelector(sel);
+const h = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 1800); }
+
+// --- permalink: #1.<base64url(deflate-raw(yaml))>, decode capped at 1MB ---
+const b64u = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64u = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+async function encodePermalink(text) {
+  const buf = await new Response(new Blob([text]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
+  return "1." + b64u(new Uint8Array(buf));
+}
+async function decodePermalink(frag) {
+  if (!frag.startsWith("1.")) throw new Error("unknown permalink version");
+  const reader = new Blob([unb64u(frag.slice(2))]).stream().pipeThrough(new DecompressionStream("deflate-raw")).getReader();
+  const chunks = []; let n = 0;
+  for (;;) { const { done, value } = await reader.read(); if (done) break; n += value.length; if (n > 1 << 20) throw new Error("permalink too large"); chunks.push(value); }
+  return new TextDecoder().decode(await new Blob(chunks).arrayBuffer());
+}
+async function share() {
+  const frag = await encodePermalink(S.yaml);
+  history.replaceState(null, "", location.pathname + location.search + "#" + frag);
+  try { await navigator.clipboard.writeText(location.href); } catch {}
+  toast(`Permalink copied · ${location.href.length} chars${location.href.length > 2000 ? " (too long for Discord)" : ""}`);
+}
+
+// --- render loop: debounce + latest-wins ---
+let timer;
+function schedule(text) { S.yaml = text; clearTimeout(timer); timer = setTimeout(renderNow, 150); }
+async function renderNow() {
+  const my = ++S.seq;
+  const r = await fetch("/render", { method: "POST", body: S.yaml }).then((x) => x.json());
+  if (my !== S.seq) return; // superseded
+  S.result = r;
+  if (r.ok) { S.good = r; if (S.selected && !r.dungeon.rooms.some((x) => x.id === S.selected)) S.selected = null; }
+  if (S.booted) S.onUpdate.forEach((f) => f());
+}
+
+// --- shared editor (textarea + gutter; real build = CodeMirror 6 with lint squiggles) ---
+function makeEditor() {
+  const el = h(`<div class="editor"><div class="gutter"></div><textarea spellcheck="false" autocomplete="off"></textarea></div>`);
+  const ta = $("textarea", el), gut = $(".gutter", el);
+  ta.value = S.yaml;
+  const paintGutter = () => {
+    const bad = new Set((S.result && !S.result.ok ? S.result.errors : []).map((e) => e.line));
+    const lines = ta.value.split("\n").length;
+    gut.innerHTML = Array.from({ length: lines }, (_, i) => bad.has(i + 1) ? `<span class="bad">${i + 1}</span>` : i + 1).join("\n");
+    gut.scrollTop = ta.scrollTop;
+  };
+  ta.addEventListener("input", () => { schedule(ta.value); paintGutter(); });
+  ta.addEventListener("scroll", () => (gut.scrollTop = ta.scrollTop));
+  ta.addEventListener("keydown", (e) => { if (e.key === "Tab") { e.preventDefault(); document.execCommand("insertText", false, "  "); } });
+  S.onUpdate.push(paintGutter);
+  paintGutter();
+  el.jump = (line, col = 1) => {
+    const lines = ta.value.split("\n"); let pos = 0;
+    for (let i = 0; i < line - 1 && i < lines.length; i++) pos += lines[i].length + 1;
+    ta.focus(); ta.setSelectionRange(pos + col - 1, pos + (lines[line - 1]?.length ?? 0));
+    ta.scrollTop = Math.max(0, (line - 4) * parseFloat(getComputedStyle(ta).lineHeight));
+  };
+  el.setValue = (v) => { ta.value = v; schedule(v); paintGutter(); };
+  return el;
+}
+
+function renderErrors(host, editor) {
+  const r = S.result;
+  if (!r) { host.innerHTML = ""; return; }
+  if (r.ok) { host.innerHTML = `<div class="okline">✓ valid · ${r.dungeon.rooms.length} rooms</div>`; return; }
+  host.innerHTML = r.errors.map((e, i) => `<button class="e" data-i="${i}"><b>${e.line}:${e.col}</b> ${esc(e.msg)} ${e.path ? `<small>@ ${esc(e.path)}</small>` : ""}</button>`).join("");
+  host.querySelectorAll(".e").forEach((b) => b.onclick = () => { const e = r.errors[b.dataset.i]; editor?.jump(e.line, e.col); });
+}
+
+function statusHTML() {
+  const r = S.result;
+  if (!S.booted) return `<span>booting python…</span>`;
+  if (!r) return "";
+  return r.ok ? `<span class="ok">● rendered</span> ${r.ms}ms` : `<span class="bad">● ${r.errors.length} error${r.errors.length > 1 ? "s" : ""}</span> · showing last good map`;
+}
+
+// --- map: inline SVG, delegated hover/click, legend ↔ room symmetry ---
+function makeMap({ onSelect, banner = true } = {}) {
+  const el = h(`<div class="map"><div class="stale-banner">invalid YAML — showing last good map</div></div>`);
+  if (!S.booted) el.append(h(`<div class="boot" style="--boot:${COLD}ms"><div>Loading Python…</div><div class="bar"><i></i></div><small>(simulated Pyodide cold start, ~8MB)</small></div>`));
+  const hl = (id, on) => el.querySelectorAll(`[data-room-id="${CSS.escape(id)}"]`).forEach((n) => n.classList.toggle("hl", on));
+  el.addEventListener("mouseover", (e) => { const t = e.target.closest("[data-room-id]"); if (t) hl(t.dataset.roomId, true); });
+  el.addEventListener("mouseout", (e) => { const t = e.target.closest("[data-room-id]"); if (t) hl(t.dataset.roomId, false); });
+  el.addEventListener("click", (e) => {
+    if (el._dragged) return;
+    const t = e.target.closest("[data-room-id]");
+    if (t) { e.stopPropagation(); select(t.dataset.roomId, t); onSelect?.(t.dataset.roomId, t); }
+  });
+  el.paint = () => {
+    $(".boot", el)?.remove();
+    el.classList.toggle("stale", !!(S.result && !S.result.ok && banner));
+    if (!S.good) return;
+    const old = $("svg", el);
+    const vb = old?.getAttribute("viewBox");
+    if (old) old.remove();
+    el.append(h(S.good.svg));
+    if (el.keepView && vb) $("svg", el).setAttribute("viewBox", vb);
+    el.querySelectorAll(".room").forEach((n) => n.classList.toggle("sel", n.dataset.roomId === S.selected));
+    el.afterPaint?.();
+  };
+  el.hl = hl;
+  S.onUpdate.push(el.paint);
+  return el;
+}
+
+function select(id) { S.selected = id; S.onUpdate.forEach((f) => f()); }
+
+// --- room card (§3): read-aloud description, chips, doors out + doors in ---
+function roomCard(id, { linkTo = select } = {}) {
+  const d = S.good?.dungeon; if (!d) return "";
+  const room = d.rooms.find((r) => r.id === id);
+  if (!room) return `<div class="empty">No room selected. Click a room on the map.</div>`;
+  const num = S.good.numbers, byId = Object.fromEntries(d.rooms.map((r) => [r.id, r]));
+  const link = (rid) => `<a data-goto="${esc(rid)}">${num[rid] ?? "?"}. ${esc(byId[rid]?.name ?? rid)}</a>`;
+  const doorDesc = (x) => [x.type, x.state, x.dc != null ? `DC ${x.dc}` : null].filter(Boolean).join(", ");
+  const ins = d.rooms.flatMap((r) => r.exits.filter((x) => x.target === id && !room.exits.some((o) => o.target === r.id)).map((x) => ({ from: r.id, ...x })));
+  const html = `<div class="card" data-card="${esc(id)}">
+    <h2><span class="n">${num[id]}</span>${esc(room.name)}</h2><div class="id">${esc(room.id)}</div>
+    <div class="chips">${room.entrance ? `<span class="chip entrance">entrance</span>` : ""}<span class="chip">${esc(room.size)}</span>${room.terrain ? `<span class="chip">${esc(room.terrain.replace(/_/g, " "))}</span>` : ""}<span class="chip">${esc(room.light)}</span></div>
+    ${room.description ? `<div class="readaloud">${esc(room.description)}</div>` : `<div class="empty">No description.</div>`}
+    <h3>Exits</h3><ul>${room.exits.map((x) => `<li><b>${x.direction.toUpperCase()}</b> → ${link(x.target)} <span class="door">· ${esc(doorDesc(x))}</span></li>`).join("") || `<li class="empty">none</li>`}</ul>
+    ${ins.length ? `<h3>One-way in</h3><ul>${ins.map((x) => `<li>from ${link(x.from)} <span class="door">· ${esc(doorDesc(x))}</span></li>`).join("")}</ul>` : ""}
+    <div class="missing">Encounters / features / treasure: in design-doc, not in models yet.</div>
+  </div>`;
+  const el = h(html);
+  el.querySelectorAll("[data-goto]").forEach((a) => a.onclick = () => linkTo(a.dataset.goto));
+  return el;
+}
+
+function exampleSelect(editor) {
+  const sel = h(`<select class="btn"><option value="">examples…</option>${Object.keys(S.examples).map((k) => `<option>${k}</option>`).join("")}</select>`);
+  sel.onchange = () => { if (sel.value) { S.selected = null; editor.setValue(S.examples[sel.value]); history.replaceState(null, "", location.pathname + location.search); } sel.value = ""; };
+  return sel;
+}
+const shareBtn = () => { const b = h(`<button class="btn">Share</button>`); b.onclick = share; return b; };
+const nameOf = () => esc(S.good?.dungeon.name ?? "Untitled dungeon");
+
+/* ======================= Variant A: Workbench ======================= */
+function VariantA(app) {
+  const root = h(`<div class="A">
+    <header><h1>Dungeon Playground</h1><span class="slot-ex"></span><span class="slot-share"></span><span class="status"></span></header>
+    <div class="tabs"><button data-t="left" class="on">Edit</button><button data-t="map">Map</button><button data-t="side">Room</button></div>
+    <div class="cols"><div class="left on"><div class="slot-ed" style="min-height:0"></div><div class="errors"></div></div><div class="slot-map" style="display:contents"></div><div class="side"></div></div>
+  </div>`);
+  const ed = makeEditor(); $(".slot-ed", root).replaceWith(ed);
+  const map = makeMap({ onSelect: () => tab("side") }); $(".slot-map", root).replaceWith(map);
+  $(".slot-ex", root).replaceWith(exampleSelect(ed)); $(".slot-share", root).replaceWith(shareBtn());
+  const tab = (t) => { if (matchMedia("(max-width:900px)").matches) { root.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("on", b.dataset.t === t)); [$(".left", root), map, $(".side", root)].forEach((p) => p.classList.toggle("on", p.classList.contains(t))); } };
+  root.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => tab(b.dataset.t));
+  S.onUpdate.push(() => {
+    $(".status", root).innerHTML = statusHTML();
+    renderErrors($(".errors", root), ed);
+    const side = $(".side", root); side.innerHTML = "";
+    side.append(S.selected ? roomCard(S.selected) : h(`<div class="empty">Click a room (or a legend line) to see its card.</div>`));
+  });
+  app.append(root);
+}
+
+/* ======================= Variant B: Map-first ======================= */
+function VariantB(app) {
+  const root = h(`<div class="B">
+    <div class="top"><button class="btn drawer-btn">✎ Edit YAML<span class="badge"></span></button><span class="title"></span><span class="slot-share"></span><span class="status"></span></div>
+    <div class="drawer"><div class="dh"><b>YAML</b><span class="slot-ex"></span><button class="btn x">close</button></div><div class="slot-ed" style="min-height:0"></div><div class="errors"></div></div>
+    <div class="pop"><button class="close">×</button><div class="body"></div></div>
+    <div class="zoom"><button class="btn" data-z="0.8">+</button><button class="btn" data-z="1.25">−</button><button class="btn" data-z="fit">⤢</button></div>
+    <div class="hint">drag to pan · wheel to zoom · <kbd>e</kbd> edit</div>
+  </div>`);
+  const ed = makeEditor(); $(".slot-ed", root).replaceWith(ed);
+  $(".slot-ex", root).replaceWith(exampleSelect(ed)); $(".slot-share", root).replaceWith(shareBtn());
+  const drawer = $(".drawer", root), pop = $(".pop", root);
+  const toggle = (on = !drawer.classList.contains("open")) => drawer.classList.toggle("open", on);
+  $(".drawer-btn", root).onclick = () => toggle(); $(".x", root).onclick = () => toggle(false);
+  addEventListener("keydown", (e) => { if (e.key === "e" && !e.target.closest("textarea,input,select")) { e.preventDefault(); toggle(); } if (e.key === "Escape") { toggle(false); pop.classList.remove("on"); } });
+
+  const placePop = (anchor) => {
+    const r = anchor.getBoundingClientRect(), W = innerWidth;
+    let x = r.right + 12; if (x + 330 > W) x = Math.max(12, r.left - 332);
+    pop.style.left = x + "px"; pop.style.top = Math.max(60, Math.min(r.top, innerHeight - 320)) + "px";
+  };
+  let anchorId = null;
+  const map = makeMap({ onSelect: (id, t) => { anchorId = id; pop.classList.add("on"); placePop(t); } });
+  map.keepView = true;
+  root.prepend(map);
+  $(".close", pop).onclick = () => { pop.classList.remove("on"); select(null); };
+  map.addEventListener("click", (e) => { if (!e.target.closest("[data-room-id]") && !map._dragged) { pop.classList.remove("on"); } });
+
+  // pan / zoom via viewBox
+  const vb = () => $("svg", map)?.viewBox.baseVal;
+  let drag = null;
+  map.addEventListener("pointerdown", (e) => { if (!vb()) return; drag = { x: e.clientX, y: e.clientY, vx: vb().x, vy: vb().y }; map._dragged = false; });
+  addEventListener("pointermove", (e) => {
+    if (!drag) return; const v = vb(), svg = $("svg", map); const k = v.width / svg.clientWidth;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 4) { map._dragged = true; map.classList.add("dragging"); }
+    v.x = drag.vx - dx * k; v.y = drag.vy - dy * k; pop.classList.remove("on");
+  });
+  addEventListener("pointerup", () => { drag = null; map.classList.remove("dragging"); setTimeout(() => (map._dragged = false), 0); });
+  const zoom = (f, cx = 0.5, cy = 0.5) => { const v = vb(); if (!v) return; const nw = v.width * f, nh = v.height * f; v.x += (v.width - nw) * cx; v.y += (v.height - nh) * cy; v.width = nw; v.height = nh; pop.classList.remove("on"); };
+  map.addEventListener("wheel", (e) => { e.preventDefault(); const r = map.getBoundingClientRect(); zoom(e.deltaY > 0 ? 1.1 : 0.9, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height); }, { passive: false });
+  root.querySelectorAll("[data-z]").forEach((b) => b.onclick = () => b.dataset.z === "fit" ? (map.keepView = false, map.paint(), map.keepView = true) : zoom(+b.dataset.z));
+
+  S.onUpdate.push(() => {
+    $(".status", root).innerHTML = statusHTML();
+    $(".title", root).innerHTML = nameOf();
+    renderErrors($(".errors", drawer), ed);
+    const bad = S.result && !S.result.ok; const badge = $(".badge", root);
+    badge.classList.toggle("on", bad); badge.textContent = bad ? S.result.errors.length : "";
+    const body = $(".body", pop); body.innerHTML = "";
+    if (S.selected) { body.append(roomCard(S.selected, { linkTo: (id) => { select(id); const t = map.querySelector(`.room[data-room-id="${CSS.escape(id)}"]`); if (t) placePop(t); } })); }
+    else pop.classList.remove("on");
+  });
+  app.append(root);
+}
+
+/* ======================= Variant C: Presenter ======================= */
+// DM window (?variant=C) drives an audience window (?variant=C&view=audience) over BroadcastChannel.
+// Presenter state: which Rooms are revealed to players, which is current. Lives in memory only.
+const chan = new BroadcastChannel("dungeon-presenter");
+const P = { revealed: new Set(), current: null };
+
+// Fog of war, faked on the client: mask the whole map, punch holes for revealed rooms and
+// for doors between two revealed rooms. Real version needs the renderer to tag doors/corridors per Room.
+function applyFog(svg, dungeon, revealed, { hideLegend = true } = {}) {
+  const NS = "http://www.w3.org/2000/svg";
+  const mk = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const legend = svg.lastElementChild;
+  if (hideLegend) legend.remove();
+  const vb = svg.viewBox.baseVal;
+  const boxes = {};
+  svg.querySelectorAll(".room").forEach((g) => {
+    const b = g.getBBox(), m = g.transform.baseVal.consolidate()?.matrix ?? { e: 0, f: 0 };
+    boxes[g.dataset.roomId] = { x: b.x + m.e, y: b.y + m.f, w: b.width, h: b.height };
+  });
+  const mask = mk("mask", { id: "fog", maskUnits: "userSpaceOnUse", x: vb.x, y: vb.y, width: vb.width, height: vb.height });
+  mask.append(mk("rect", { x: vb.x, y: vb.y, width: vb.width, height: vb.height, fill: "black" }));
+  const pad = 26;
+  for (const id of revealed) { const b = boxes[id]; if (b) mask.append(mk("rect", { x: b.x - pad, y: b.y - pad, width: b.w + 2 * pad, height: b.h + 2 * pad, fill: "white", rx: 10 })); }
+  for (const r of dungeon.rooms) for (const d of r.exits) {
+    if (d.type === "secret" && !(revealed.has(r.id) && revealed.has(d.target))) continue;
+    if (!revealed.has(r.id) || !revealed.has(d.target)) continue;
+    const a = boxes[r.id], b = boxes[d.target]; if (!a || !b) continue;
+    mask.append(mk("line", { x1: a.x + a.w / 2, y1: a.y + a.h / 2, x2: b.x + b.w / 2, y2: b.y + b.h / 2, stroke: "white", "stroke-width": 44, "stroke-linecap": "round" }));
+  }
+  const defs = mk("defs", {}); defs.append(mask);
+  const wrap = mk("g", { mask: "url(#fog)" });
+  wrap.append(mk("rect", { x: vb.x, y: vb.y, width: vb.width, height: vb.height, fill: "#f6f1e6" }));
+  [...svg.children].forEach((c) => { if (c !== legend || hideLegend) wrap.append(c); });
+  svg.append(defs, wrap);
+  if (!hideLegend && legend.isConnected === false) svg.append(legend);
+  // shrink viewBox to revealed area so the audience isn't shown the dungeon's extent
+  const rb = [...revealed].map((id) => boxes[id]).filter(Boolean);
+  if (rb.length) {
+    const x0 = Math.min(...rb.map((b) => b.x)) - 120, y0 = Math.min(...rb.map((b) => b.y)) - 120;
+    const x1 = Math.max(...rb.map((b) => b.x + b.w)) + 120, y1 = Math.max(...rb.map((b) => b.y + b.h)) + 120;
+    svg.setAttribute("viewBox", `${x0} ${y0} ${x1 - x0} ${y1 - y0}`);
+  }
+}
+
+function broadcast() { chan.postMessage({ type: "state", good: S.good, revealed: [...P.revealed], current: P.current }); }
+
+function VariantC(app) {
+  const root = h(`<div class="C">
+    <header><h1></h1><span class="slot-ex"></span><button class="btn open-aud">Open audience window ↗</button><button class="btn reset">Hide all</button><button class="btn all">Reveal all</button><span class="conn">audience: not connected</span></header>
+    <div class="body"><div class="slot-map" style="display:contents"></div>
+      <div class="notes">
+        <section class="cur-card"></section>
+        <section><h3>Move party to</h3><div class="goto"></div></section>
+        <section><h3>Revealed to players</h3><div class="rooms"></div></section>
+        <section><h3>Audience sees</h3><div class="preview"></div></section>
+      </div></div>
+  </div>`);
+  const hiddenEd = { setValue: (v) => { S.yaml = v; P.revealed.clear(); P.current = null; renderNow(); } };
+  $(".slot-ex", root).replaceWith(exampleSelect(hiddenEd));
+  const moveTo = (id) => { P.current = id; P.revealed.add(id); S.selected = id; S.onUpdate.forEach((f) => f()); };
+  const map = makeMap({ banner: false, onSelect: moveTo });
+  map.afterPaint = () => map.querySelectorAll(".room").forEach((n) => {
+    n.classList.toggle("unrevealed", !P.revealed.has(n.dataset.roomId));
+    n.classList.toggle("current", n.dataset.roomId === P.current);
+  });
+  $(".slot-map", root).replaceWith(map);
+  $(".open-aud", root).onclick = () => window.open(`?variant=C&view=audience&coldstart=0`, "dungeon-audience", "width=1100,height=760");
+  $(".reset", root).onclick = () => { P.revealed.clear(); if (P.current) P.revealed.add(P.current); S.onUpdate.forEach((f) => f()); };
+  $(".all", root).onclick = () => { S.good?.dungeon.rooms.forEach((r) => P.revealed.add(r.id)); S.onUpdate.forEach((f) => f()); };
+
+  let lastPing = 0;
+  chan.onmessage = (e) => { if (e.data.type === "hello" || e.data.type === "ping") { lastPing = Date.now(); if (e.data.type === "hello") broadcast(); } };
+  setInterval(() => { const c = $(".conn", root), on = Date.now() - lastPing < 4000; c.classList.toggle("on", on); c.textContent = on ? "● audience connected" : "audience: not connected"; }, 1000);
+
+  // number keys jump the party (1-9)
+  addEventListener("keydown", (e) => {
+    if (e.target.closest("textarea,input,select")) return;
+    const n = +e.key; if (!n || !S.good) return;
+    const id = Object.entries(S.good.numbers).find(([, v]) => v === n)?.[0]; if (id) moveTo(id);
+  });
+
+  S.onUpdate.push(() => {
+    const d = S.good?.dungeon; if (!d) return;
+    if (!P.current) { const ent = d.rooms.find((r) => r.entrance) ?? d.rooms[0]; P.current = ent.id; P.revealed.add(ent.id); S.selected = ent.id; }
+    $("h1", root).innerHTML = nameOf() + " <small style='font-weight:normal;color:var(--ink-2)'>· presenter</small>";
+    const num = S.good.numbers, byId = Object.fromEntries(d.rooms.map((r) => [r.id, r]));
+    const cc = $(".cur-card", root); cc.innerHTML = ""; cc.append(roomCard(P.current, { linkTo: moveTo }));
+    cc.querySelectorAll("li").forEach((li, i) => { const x = byId[P.current].exits[i]; if (x?.type === "secret") li.insertAdjacentHTML("beforeend", `<span class="secret-tag">SECRET</span>`); });
+    $(".goto", root).innerHTML = byId[P.current].exits.map((x) => `<button data-id="${esc(x.target)}" class="${x.type === "secret" ? "secret" : ""}">${x.direction.toUpperCase()} → ${num[x.target]}. ${esc(byId[x.target]?.name ?? x.target)}</button>`).join("");
+    $(".goto", root).querySelectorAll("button").forEach((b) => b.onclick = () => moveTo(b.dataset.id));
+    const rooms = $(".rooms", root);
+    rooms.innerHTML = [...d.rooms].sort((a, b) => num[a.id] - num[b.id]).map((r) => `<input type="checkbox" id="rv-${esc(r.id)}" data-id="${esc(r.id)}" ${P.revealed.has(r.id) ? "checked" : ""}><label for="rv-${esc(r.id)}" class="${r.id === P.current ? "cur" : ""}">${num[r.id]}. ${esc(r.name)}</label>`).join("");
+    rooms.querySelectorAll("input").forEach((cb) => cb.onchange = () => { cb.checked ? P.revealed.add(cb.dataset.id) : P.revealed.delete(cb.dataset.id); map.afterPaint(); paintPreview(); broadcast(); });
+    map.afterPaint();
+    paintPreview();
+    broadcast();
+  });
+  const paintPreview = () => {
+    const pv = $(".preview", root); pv.innerHTML = "";
+    if (!S.good) return;
+    const m = h(`<div class="map"></div>`); m.append(h(S.good.svg)); pv.append(m);
+    const svg = $("svg", m); applyFog(svg, S.good.dungeon, P.revealed);
+    svg.querySelectorAll(".room").forEach((n) => n.classList.toggle("current", n.dataset.roomId === P.current));
+  };
+  app.append(root);
+}
+
+function AudienceView(app) {
+  document.body.classList.add("audience");
+  const root = h(`<div class="AUD"><div class="map"><div class="waiting">Waiting for the DM…</div></div><div class="caption"></div></div>`);
+  app.append(root);
+  const mapEl = $(".map", root);
+  chan.onmessage = (e) => {
+    if (e.data.type !== "state" || !e.data.good) return;
+    const { good, revealed, current } = e.data;
+    mapEl.innerHTML = ""; mapEl.append(h(good.svg));
+    const svg = $("svg", mapEl);
+    applyFog(svg, good.dungeon, new Set(revealed));
+    svg.querySelectorAll(".room").forEach((n) => n.classList.toggle("current", n.dataset.roomId === current));
+    const room = good.dungeon.rooms.find((r) => r.id === current);
+    $(".caption", root).innerHTML = room ? `<small>${esc(good.dungeon.name)}</small>${esc(room.name)}` : "";
+  };
+  chan.postMessage({ type: "hello" });
+  setInterval(() => chan.postMessage({ type: "ping" }), 2000);
+}
+
+/* ======================= switcher + boot ======================= */
+function go(d) { const i = (KEYS.indexOf(variant) + d + KEYS.length) % KEYS.length; params.set("variant", KEYS[i]); location.search = params.toString(); }
+$("#vlabel").textContent = `${variant} · ${VARIANTS[variant]}`;
+$("#prev").onclick = () => go(-1); $("#next").onclick = () => go(1);
+addEventListener("keydown", (e) => { if (e.target.closest("textarea,input,select,[contenteditable]")) return; if (e.key === "ArrowLeft") go(-1); if (e.key === "ArrowRight") go(1); });
+
+(async () => {
+  if (variant === "C" && params.get("view") === "audience") { AudienceView($("#app")); return; }
+  S.examples = await fetch("/examples").then((r) => r.json());
+  const frag = location.hash.slice(1);
+  try { S.yaml = frag ? await decodePermalink(frag) : S.examples.goblin_warren; }
+  catch (e) { toast("Bad permalink: " + e.message); S.yaml = S.examples.goblin_warren; }
+  ({ A: VariantA, B: VariantB, C: VariantC })[variant]($("#app"));
+  renderNow();
+  setTimeout(() => { S.booted = true; S.onUpdate.forEach((f) => f()); }, COLD);
+})();
+</script>
+</body>
+</html>

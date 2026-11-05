@@ -14,3 +14,7 @@ flowchart-ascii:
 flowchart-png:
   uv run main.py examples/goblin_warren.yaml | mise exec -- mmdc -i - -o out.png -b white
 
+
+# PROTOTYPE (throwaway): Playground UX variants, ?variant=A|B|C
+prototype:
+  uv run web/prototype-playground/server.py
