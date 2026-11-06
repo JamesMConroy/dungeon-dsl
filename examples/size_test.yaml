@@ -12,7 +12,7 @@ rooms:
       - {target: barracks, direction: w, type: archway, state: open}
       - {target: chapel, direction: n}
       - {target: vestry, direction: ne}
-      - {target: oubliette, direction: se, type: secret, state: hidden}
+      - {target: oubliette, direction: se, type: secret, state: closed}
   - id: barracks
     name: "Barracks"
     size: large
@@ -35,7 +35,7 @@ rooms:
     name: "Oubliette"
     size: tiny
     exits:
-      - {target: hall, direction: nw, type: secret, state: hidden}
+      - {target: hall, direction: nw, type: secret, state: closed}
   - id: scriptorium
     name: "Scriptorium"
     size: tiny

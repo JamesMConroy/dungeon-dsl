@@ -1,0 +1,464 @@
+:root {
+  --paper: #f6f1e6;
+  --ink: #1d1a16;
+  --ink-2: #5b5246;
+  --rule: #cfc4ad;
+  --err: #b3261e;
+  --accent: #8a3b12;
+  --highlight: #f3e2b0;
+  --selected: #ecc98a;
+  --warn: #8a6100;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.45 Georgia, "Times New Roman", serif;
+}
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(260px, 0.8fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1px;
+  background: var(--rule);
+}
+
+.toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--paper);
+}
+
+.toolbar select,
+.toolbar button {
+  padding: 3px 10px;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.toolbar button:disabled {
+  border-color: var(--rule);
+  color: var(--ink-2);
+}
+
+.share-status {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.share-status[data-too-long] {
+  color: var(--warn);
+}
+
+.share-status[data-state="bad-link"],
+.share-status[data-state="refused"],
+.share-status[data-state="copy-failed"] {
+  color: var(--err);
+}
+
+.permalink-field {
+  flex: 1;
+  min-width: 0;
+  font: 12px ui-monospace, monospace;
+}
+
+.pane {
+  min-height: 0;
+  background: var(--paper);
+}
+
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-pane .cm-editor {
+  flex: 1;
+  min-height: 0;
+  background: #fffdf8;
+}
+
+.problem-list {
+  flex: none;
+  max-height: 30%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border-top: 1px solid var(--rule);
+  list-style: none;
+  font-size: 13px;
+}
+
+.problem-list button {
+  display: block;
+  width: 100%;
+  padding: 4px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.problem-list button:hover,
+.problem-list button:focus-visible {
+  background: var(--rule);
+}
+
+.problem-list button[data-severity="error"] .problem-line {
+  color: var(--err);
+}
+
+.problem-list button[data-severity="warning"] .problem-line {
+  color: var(--warn);
+}
+
+/* CodeMirror's own Warning underline is orange. */
+.cm-editor .cm-content .cm-lintRange-warning {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="6" height="3"><path d="m0 2.5 l2 -1.5 l1 0 l2 1.5 l1 0" stroke="%23d9b800" fill="none" stroke-width="1"/></svg>');
+}
+
+.problem-line {
+  font-weight: bold;
+}
+
+.map-pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-status:empty {
+  display: none;
+}
+
+.map-banner {
+  padding: 4px 12px;
+  background: var(--err);
+  color: var(--paper);
+  font-size: 13px;
+}
+
+.map-banner[hidden] {
+  display: none;
+}
+
+.map-pane[data-state="invalid"] .map {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+.map-status {
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 13px;
+  white-space: pre-wrap;
+  max-height: 40%;
+  overflow: auto;
+}
+
+.map-pane[data-state="message"] .map-status {
+  color: var(--err);
+}
+
+.map-pane[data-state="loading"] .map {
+  display: none;
+}
+
+.map {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  cursor: grab;
+  /* Pan and pinch are ours; the browser mustn't scroll or select text instead. */
+  touch-action: none;
+  user-select: none;
+}
+
+.map[data-dragging] {
+  cursor: grabbing;
+}
+
+.map-controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-controls button {
+  min-width: 36px;
+  height: 36px;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.map-pane[data-state="loading"] .map-controls {
+  display: none;
+}
+
+.map svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.map .room {
+  cursor: pointer;
+}
+
+.map .room:hover rect,
+.map .room.highlighted rect {
+  fill: var(--highlight);
+}
+
+.map .room.selected rect {
+  fill: var(--selected);
+}
+
+.map text[data-room-id] {
+  cursor: pointer;
+}
+
+.map text[data-room-id]:hover,
+.map text[data-room-id].highlighted,
+.map text[data-room-id].selected {
+  fill: var(--accent);
+}
+
+.card-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px 16px;
+}
+
+/* Only Map-first has these. */
+.drawer-button,
+.drawer-header,
+.card-close {
+  display: none;
+}
+
+.problem-badge {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--err);
+  color: var(--paper);
+  font-size: 11px;
+}
+
+.problem-badge[hidden] {
+  display: none;
+}
+
+[data-layout="map-first"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-layout="map-first"] .toolbar {
+  flex-wrap: wrap;
+}
+
+[data-layout="map-first"] .permalink-field {
+  flex-basis: 100%;
+}
+
+[data-layout="map-first"] .drawer-button {
+  display: inline-block;
+}
+
+[data-layout="map-first"] .map-pane[data-state="ready"] .map-status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border: 0;
+  pointer-events: none;
+}
+
+[data-layout="map-first"] .editor-pane {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  width: min(460px, 92vw);
+  border-right: 1px solid var(--rule);
+  box-shadow: 6px 0 24px rgb(0 0 0 / 12%);
+  transform: translateX(-102%);
+  /* Hidden, not just off screen, so Tab can't reach into a closed drawer. */
+  visibility: hidden;
+  transition: transform 0.2s, visibility 0.2s;
+}
+
+[data-layout="map-first"] .editor-pane[data-open] {
+  transform: none;
+  visibility: visible;
+}
+
+[data-layout="map-first"] .drawer-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+[data-layout="map-first"] .card-pane {
+  position: fixed;
+  z-index: 5;
+  width: min(320px, calc(100vw - 16px));
+  max-height: 60vh;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 18%);
+}
+
+[data-layout="map-first"] .card-pane:not([data-open]) {
+  display: none;
+}
+
+[data-layout="map-first"] .card-close {
+  display: block;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+[data-layout="map-first"] .room-details h2 {
+  padding-right: 28px;
+}
+
+.room-card-empty {
+  margin: 0;
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.room-details h2 {
+  margin: 0 0 2px;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.room-number {
+  margin-right: 8px;
+  color: var(--accent);
+  font-style: italic;
+}
+
+.room-id {
+  color: var(--ink-2);
+  font: 12px ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.chip {
+  padding: 1px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: #fffdf8;
+  font-size: 12px;
+}
+
+.chip-entrance {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.read-aloud {
+  margin: 10px 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  background: #fffdf8;
+  font-style: italic;
+  font-size: 16px;
+}
+
+.room-details h3 {
+  margin: 14px 0 4px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.door-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.door-list li {
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--rule);
+}
+
+.room-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.room-link:hover {
+  text-decoration: underline;
+}
+
+.door-summary {
+  color: var(--ink-2);
+  font-size: 13px;
+}

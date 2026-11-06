@@ -15,6 +15,9 @@ cli = [
     "typer>=0.27.2",
 ]
 
+[project.scripts]
+dungeon-dsl = "dungeon_dsl.cli:app"
+
 [dependency-groups]
 dev = [
     "dungeon-dsl[cli]",
@@ -30,3 +33,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = ""
+
+[tool.ruff]
+# Agent worktrees live here; each one is linted from its own checkout.
+extend-exclude = [".claude"]

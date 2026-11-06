@@ -12,7 +12,11 @@ SVG_NS = "http://www.w3.org/2000/svg"
 def _minimal_dungeon(size: str) -> Dungeon:
     return Dungeon(
         name="Test",
-        rooms=[Room(id="r1", name="Room 1", size=size, entrance=True)],
+        rooms=[
+            Room.model_validate(
+                {"id": "r1", "name": "Room 1", "size": size, "entrance": True}
+            )
+        ],
     )
 
 
