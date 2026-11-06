@@ -134,6 +134,7 @@ body {
 }
 
 .map-pane {
+  position: relative;
   display: flex;
   flex-direction: column;
 }
@@ -179,7 +180,40 @@ body {
 .map {
   flex: 1;
   min-height: 0;
-  padding: 12px;
+  overflow: hidden;
+  cursor: grab;
+  /* Pan and pinch are ours; the browser mustn't scroll or select text instead. */
+  touch-action: none;
+  user-select: none;
+}
+
+.map[data-dragging] {
+  cursor: grabbing;
+}
+
+.map-controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-controls button {
+  min-width: 36px;
+  height: 36px;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.map-pane[data-state="loading"] .map-controls {
+  display: none;
 }
 
 .map svg {

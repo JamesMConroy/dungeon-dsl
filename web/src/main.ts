@@ -4,6 +4,7 @@ import { createEditor } from "./editor";
 import { bundledExamples } from "./examples";
 import { createLayout } from "./layout";
 import { createMapPane } from "./map-pane";
+import { createPanZoom } from "./pan-zoom";
 import { decodePermalink, PermalinkError } from "./permalink";
 import { createProblemList } from "./problem-list";
 import { createRenderClient, type RenderEvent } from "./render-client";
@@ -20,6 +21,7 @@ const {
   cardPane,
 } = createLayout(document.querySelector<HTMLElement>("#app")!);
 const pane = createMapPane(mapPane);
+const panZoom = createPanZoom(pane.map, mapPane);
 const explorer = createRoomExplorer(pane.map, cardPane);
 
 function showProblems(problems: Problem[]) {
@@ -34,6 +36,7 @@ function showRenderEvent(event: RenderEvent) {
       return;
     case "rendered":
       pane.showMap(event.svg, event.ms);
+      panZoom.mapReplaced();
       explorer.show(event.result.dungeon);
       toolbar.setLastGoodMap(event.svg);
       showProblems(event.result.problems);
