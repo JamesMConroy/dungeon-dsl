@@ -98,6 +98,9 @@ def check(dungeon: Dungeon) -> list[Problem]:
     known_ids = {room.id for room in dungeon.rooms}
     # No entrance is already one Problem, so don't also call every Room unreachable.
     reachable = known_ids if entrance is None else _reachable_from(entrance, dungeon)
+    # Keyed by id, so Rooms that share an id share their Doors: the duplicate id is
+    # already an Error, and a Warning on top of it would be noise.
+    links = {(room.id, door.target) for room in dungeon.rooms for door in room.exits}
     seen_ids: set[str] = set()
     for index, room in enumerate(dungeon.rooms):
         if room.id in seen_ids:
@@ -126,6 +129,14 @@ def check(dungeon: Dungeon) -> list[Problem]:
                         ["rooms", index, "exits", door_index, "target"],
                     )
                 )
+            elif (door.target, room.id) not in links:
+                problems.append(
+                    _warning(
+                        "door.one_way",
+                        f"room {door.target!r} has no door back to {room.id!r}",
+                        ["rooms", index, "exits", door_index, "target"],
+                    )
+                )
     return problems
 
 
@@ -149,6 +160,10 @@ def _reachable_from(entrance: str, dungeon: Dungeon) -> set[str]:
 
 def _error(code: str, message: str, loc: list[str | int]) -> Problem:
     return Problem(severity="error", code=code, message=message, loc=loc)
+
+
+def _warning(code: str, message: str, loc: list[str | int]) -> Problem:
+    return Problem(severity="warning", code=code, message=message, loc=loc)
 
 
 def _parse(text: str) -> tuple[Node | None, Any]:

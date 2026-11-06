@@ -266,6 +266,7 @@ def test_several_dungeon_level_errors_are_reported_together() -> None:
 
     assert sorted(outcome(text), key=lambda problem: problem[2] or 0) == [
         ("door.unknown_target", "error", 8),
+        ("door.one_way", "warning", 13),
         ("room.duplicate_id", "error", 15),
         ("room.unreachable", "error", 17),
     ]
@@ -284,12 +285,12 @@ def test_a_structural_error_suppresses_the_dungeon_level_rules() -> None:
 
 
 def test_a_door_to_an_unknown_room_is_an_error_on_its_target_only() -> None:
-    # The cell's own door back still connects it, so nothing else is wrong.
-    text = VALID.replace("target: cell", "target: cel")
+    # No One-way Door Warning either, as the Door leads nowhere.
+    text = VALID + "      - target: nowhere\n        direction: e\n"
 
-    assert outcome(text) == [("door.unknown_target", "error", 8)]
+    assert outcome(text) == [("door.unknown_target", "error", 15)]
     assert load(text).dungeon is None
-    assert span_of(text) == (8, 17, 8, 20)
+    assert span_of(text) == (15, 17, 15, 24)
 
 
 def test_a_room_with_only_a_broken_door_to_it_is_also_unreachable() -> None:
@@ -335,6 +336,7 @@ def test_without_an_entrance_an_unknown_target_is_still_reported() -> None:
 
     assert sorted(outcome(text), key=lambda problem: problem[2] or 0) == [
         ("dungeon.no_entrance", "error", 2),
+        ("door.one_way", "warning", 7),
         ("door.unknown_target", "error", 12),
     ]
 
@@ -363,6 +365,7 @@ def test_rooms_linked_only_to_each_other_are_each_unreachable() -> None:
 
     assert outcome(text) == [
         ("room.unreachable", "error", 15),
+        ("door.one_way", "warning", 18),
         ("room.unreachable", "error", 20),
     ]
 
@@ -386,7 +389,7 @@ def test_a_door_connects_its_rooms_whichever_side_declares_it() -> None:
 """
     )
 
-    assert outcome(text) == []
+    assert outcome(text) == [("door.one_way", "warning", 18)]
 
 
 @pytest.mark.parametrize("text", ["", "# only a comment\n", "just a string\n", "- 1\n"])
@@ -430,3 +433,71 @@ def test_every_bundled_example_loads_and_renders(example: Path) -> None:
     assert [p for p in result.problems if p.severity == "error"] == []
     assert result.dungeon is not None
     assert render_svg(result.dungeon)
+
+
+@pytest.mark.parametrize("example", EXAMPLES, ids=lambda path: path.stem)
+def test_no_bundled_example_has_a_warning(example: Path) -> None:
+    assert load(example.read_text(encoding="utf-8")).problems == []
+
+
+ONE_WAY = """\
+name: Test
+rooms:
+  - id: hall
+    name: Hall
+    entrance: true
+    exits:
+      - direction: n
+        target: pit
+  - id: pit
+    name: Pit
+"""
+
+
+def test_a_one_way_door_is_a_warning_on_its_target_and_the_dungeon_stays_valid() -> (
+    None
+):
+    result = load(ONE_WAY)
+
+    assert outcome(ONE_WAY) == [("door.one_way", "warning", 8)]
+    assert result.problems[0].loc == ["rooms", 0, "exits", 0, "target"]
+    assert span_of(ONE_WAY) == (8, 17, 8, 20)
+    assert result.dungeon is not None
+
+
+def test_a_door_to_its_own_room_is_its_own_way_back() -> None:
+    text = VALID + "      - target: cell\n        direction: e\n"
+
+    assert outcome(text) == []
+
+
+def test_a_warning_comes_with_any_errors_and_the_dungeon_is_still_invalid() -> None:
+    text = ONE_WAY + "  - id: lost\n    name: Lost\n"
+
+    assert outcome(text) == [
+        ("door.one_way", "warning", 8),
+        ("room.unreachable", "error", 11),
+    ]
+    assert load(text).dungeon is None
+
+
+def test_rooms_sharing_an_id_share_their_ways_back() -> None:
+    # Only the first hall has the cell's way back. The duplicate id is the mistake.
+    text = (
+        VALID
+        + "  - id: hall\n    name: Again\n    exits:\n"
+        + "      - target: cell\n        direction: w\n"
+    )
+
+    assert outcome(text) == [("room.duplicate_id", "error", 15)]
+
+
+def test_a_broken_door_is_no_way_back_for_the_door_it_was_meant_to_answer() -> None:
+    # One typo, two true statements: the target is unknown, and the cell's door is
+    # now one-way. Only the Door whose own target is unknown is spared the Warning.
+    text = VALID.replace("target: cell", "target: cel")
+
+    assert outcome(text) == [
+        ("door.unknown_target", "error", 8),
+        ("door.one_way", "warning", 13),
+    ]

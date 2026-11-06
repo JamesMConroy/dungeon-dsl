@@ -43,6 +43,9 @@ def main(
     as_json: Annotated[
         bool, typer.Option("--json", help="Output the load Result as JSON.")
     ] = False,
+    strict: Annotated[
+        bool, typer.Option("--strict", help="Fail on Warnings as well as Errors.")
+    ] = False,
 ) -> None:
     result = load(dungeon.read())
 
@@ -55,7 +58,7 @@ def main(
         if result.dungeon is not None:
             print(RENDERERS[format](result.dungeon))
 
-    if result.dungeon is None:
+    if result.dungeon is None or (strict and result.problems):
         sys.exit(1)
 
 
