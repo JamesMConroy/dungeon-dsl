@@ -7,9 +7,15 @@ import { renderEmptyRoomCard, renderRoomCard } from "./room-card";
 export type RoomExplorer = {
   /** Call after the map's SVG is replaced with a drawing of this Dungeon. */
   show(dungeon: DungeonData): void;
+  /** Deselects the Room, closing its card. */
+  clear(): void;
 };
 
-export function createRoomExplorer(map: HTMLElement, cardHost: HTMLElement): RoomExplorer {
+export function createRoomExplorer(
+  map: HTMLElement,
+  cardHost: HTMLElement,
+  onCardPainted: (roomId: string | null) => void,
+): RoomExplorer {
   let dungeon: DungeonData | null = null;
   let selectedId: string | null = null;
 
@@ -30,6 +36,7 @@ export function createRoomExplorer(map: HTMLElement, cardHost: HTMLElement): Roo
     const room = dungeon?.rooms.find((r) => r.id === selectedId);
     if (dungeon && room) cardHost.replaceChildren(renderRoomCard(dungeon, room, select));
     else cardHost.replaceChildren(renderEmptyRoomCard());
+    onCardPainted(room ? room.id : null);
   }
 
   function select(roomId: string) {
@@ -51,6 +58,10 @@ export function createRoomExplorer(map: HTMLElement, cardHost: HTMLElement): Roo
     show(next) {
       dungeon = next;
       if (!next.rooms.some((r) => r.id === selectedId)) selectedId = null;
+      paintSelection();
+    },
+    clear() {
+      selectedId = null;
       paintSelection();
     },
   };

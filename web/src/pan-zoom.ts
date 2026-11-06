@@ -20,7 +20,7 @@ const WHEEL_PX_PER_LINE = 16;
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 const midpoint = (a: Point, b: Point) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 
-export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement): PanZoom {
+export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement, onViewChange: () => void): PanZoom {
   let fitted: string | null = null;
   let view: string | null = null;
 
@@ -33,6 +33,7 @@ export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement): Pa
   function setViewBox(element: SVGSVGElement, x: number, y: number, width: number, height: number) {
     view = `${x} ${y} ${width} ${height}`;
     element.setAttribute("viewBox", view);
+    onViewChange();
   }
 
   function pan(dx: number, dy: number) {
@@ -64,6 +65,7 @@ export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement): Pa
   function fit() {
     view = null;
     if (fitted !== null) svg()?.setAttribute("viewBox", fitted);
+    onViewChange();
   }
 
   function movePointer(pointerId: number, to: Point) {
@@ -83,7 +85,8 @@ export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement): Pa
       const before = midpoint(from, other);
       const after = midpoint(to, other);
       pan(after.x - before.x, after.y - before.y);
-      zoom(distance(from, other) / distance(to, other), after);
+      const spread = distance(to, other);
+      if (spread > 0) zoom(distance(from, other) / spread, after);
     } else {
       pan(to.x - from.x, to.y - from.y);
     }
