@@ -4,6 +4,7 @@
   --ink-2: #5b5246;
   --rule: #cfc4ad;
   --err: #b3261e;
+  --warn: #8a6100;
 }
 
 * {
@@ -26,9 +27,39 @@ body {
 .workbench {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 1px;
   background: var(--rule);
+}
+
+.toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: var(--paper);
+}
+
+.share-status {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.share-status[data-too-long] {
+  color: var(--warn);
+}
+
+.share-status[data-state="bad-link"],
+.share-status[data-state="refused"],
+.share-status[data-state="copy-failed"] {
+  color: var(--err);
+}
+
+.share-link {
+  flex: 1;
+  min-width: 0;
+  font: 12px ui-monospace, monospace;
 }
 
 .pane {

@@ -2,8 +2,14 @@
 import { yaml } from "@codemirror/lang-yaml";
 import { basicSetup, EditorView } from "codemirror";
 
-export function createEditor(parent: HTMLElement, doc: string, onChange: (text: string) => void): void {
-  new EditorView({
+export type Editor = {
+  text(): string;
+  /** Replaces the whole document; reports through onChange like any other edit. */
+  setText(text: string): void;
+};
+
+export function createEditor(parent: HTMLElement, doc: string, onChange: (text: string) => void): Editor {
+  const view = new EditorView({
     parent,
     doc,
     extensions: [
@@ -15,4 +21,10 @@ export function createEditor(parent: HTMLElement, doc: string, onChange: (text: 
       }),
     ],
   });
+  return {
+    text: () => view.state.doc.toString(),
+    setText(text) {
+      view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } });
+    },
+  };
 }
