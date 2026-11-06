@@ -134,6 +134,7 @@ body {
 }
 
 .map-pane {
+  position: relative;
   display: flex;
   flex-direction: column;
 }
@@ -179,7 +180,40 @@ body {
 .map {
   flex: 1;
   min-height: 0;
-  padding: 12px;
+  overflow: hidden;
+  cursor: grab;
+  /* Pan and pinch are ours; the browser mustn't scroll or select text instead. */
+  touch-action: none;
+  user-select: none;
+}
+
+.map[data-dragging] {
+  cursor: grabbing;
+}
+
+.map-controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-controls button {
+  min-width: 36px;
+  height: 36px;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.map-pane[data-state="loading"] .map-controls {
+  display: none;
 }
 
 .map svg {
@@ -212,8 +246,120 @@ body {
 }
 
 .card-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-body {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   padding: 14px 16px;
+}
+
+/* Only Map-first has these. */
+.drawer-button,
+.drawer-header,
+.card-close {
+  display: none;
+}
+
+.problem-badge {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--err);
+  color: var(--paper);
+  font-size: 11px;
+}
+
+.problem-badge[hidden] {
+  display: none;
+}
+
+[data-layout="map-first"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-layout="map-first"] .toolbar {
+  flex-wrap: wrap;
+}
+
+[data-layout="map-first"] .share-link {
+  flex-basis: 100%;
+}
+
+[data-layout="map-first"] .drawer-button {
+  display: inline-block;
+}
+
+[data-layout="map-first"] .map-pane[data-state="ready"] .map-status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border: 0;
+  pointer-events: none;
+}
+
+[data-layout="map-first"] .editor-pane {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  width: min(460px, 92vw);
+  border-right: 1px solid var(--rule);
+  box-shadow: 6px 0 24px rgb(0 0 0 / 12%);
+  transform: translateX(-102%);
+  /* Hidden, not just off screen, so Tab can't reach into a closed drawer. */
+  visibility: hidden;
+  transition: transform 0.2s, visibility 0.2s;
+}
+
+[data-layout="map-first"] .editor-pane[data-open] {
+  transform: none;
+  visibility: visible;
+}
+
+[data-layout="map-first"] .drawer-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+[data-layout="map-first"] .card-pane {
+  position: fixed;
+  z-index: 5;
+  width: min(320px, calc(100vw - 16px));
+  max-height: 60vh;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 18%);
+}
+
+[data-layout="map-first"] .card-pane:not([data-open]) {
+  display: none;
+}
+
+[data-layout="map-first"] .card-close {
+  display: block;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+[data-layout="map-first"] .room-details h2 {
+  padding-right: 28px;
 }
 
 .room-card-empty {

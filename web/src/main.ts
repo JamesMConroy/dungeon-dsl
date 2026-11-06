@@ -1,14 +1,17 @@
 // Wires the Playground's parts together; the behaviour lives in the modules.
 import goblinWarren from "../../examples/goblin_warren.yaml?raw";
+import { createDrawer } from "./drawer";
 import { createEditor } from "./editor";
 import { bundledExamples } from "./examples";
 import { createLayout } from "./layout";
 import { createMapPane } from "./map-pane";
+import { createPanZoom } from "./pan-zoom";
 import { decodePermalink, PermalinkError } from "./permalink";
 import { createProblemList } from "./problem-list";
 import { createRenderClient, type RenderEvent } from "./render-client";
 import type { Problem } from "./render-protocol";
 import { createRoomExplorer } from "./room-explorer";
+import { createRoomPopover } from "./room-popover";
 import { createShareControl } from "./share";
 import { createToolbar } from "./toolbar";
 import "./style.css";
@@ -18,13 +21,18 @@ const {
   editorPane,
   mapPane,
   cardPane,
+  isMapFirst,
 } = createLayout(document.querySelector<HTMLElement>("#app")!);
 const pane = createMapPane(mapPane);
-const explorer = createRoomExplorer(pane.map, cardPane);
+const popover = createRoomPopover(cardPane, pane.map, { isMapFirst, onDismiss: () => explorer.clear() });
+const panZoom = createPanZoom(pane.map, mapPane, () => popover.reposition());
+const explorer = createRoomExplorer(pane.map, popover.body, (roomId) => popover.anchorTo(roomId));
+const drawer = createDrawer(toolbarSlot, editorPane);
 
 function showProblems(problems: Problem[]) {
   editor.showProblems(problems);
   problemList.show(problems);
+  drawer.showProblemCount(problems.length);
 }
 
 function showRenderEvent(event: RenderEvent) {
@@ -34,6 +42,7 @@ function showRenderEvent(event: RenderEvent) {
       return;
     case "rendered":
       pane.showMap(event.svg, event.ms);
+      panZoom.mapReplaced();
       explorer.show(event.result.dungeon);
       toolbar.setLastGoodMap(event.svg);
       showProblems(event.result.problems);

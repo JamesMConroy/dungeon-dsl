@@ -5,10 +5,22 @@ export type Layout = {
   editorPane: HTMLElement;
   mapPane: HTMLElement;
   cardPane: HTMLElement;
+  isMapFirst(): boolean;
 };
+
+const MAP_FIRST = "(max-width: 820px)";
 
 export function createLayout(root: HTMLElement): Layout {
   root.className = "workbench";
+
+  // Only an attribute changes, and CSS does the rest: no pane is ever rebuilt or
+  // moved, so crossing the breakpoint can't lose the editor's text or the selection.
+  const mapFirst = window.matchMedia(MAP_FIRST);
+  const applyLayout = () => {
+    root.dataset.layout = mapFirst.matches ? "map-first" : "workbench";
+  };
+  mapFirst.addEventListener("change", applyLayout);
+  applyLayout();
 
   const toolbar = document.createElement("header");
   toolbar.className = "toolbar";
@@ -27,5 +39,5 @@ export function createLayout(root: HTMLElement): Layout {
   cardPane.dataset.testid = "room-card";
 
   root.append(toolbar, editorPane, mapPane, cardPane);
-  return { toolbar, editorPane, mapPane, cardPane };
+  return { toolbar, editorPane, mapPane, cardPane, isMapFirst: () => mapFirst.matches };
 }
