@@ -46,7 +46,29 @@ def compute_layout(dungeon: Dungeon) -> Layout:
     # blocked cells so later rooms can't be dropped on top of a corridor
     edges: list[tuple[str, str]] = []
 
-    queue: deque[str] = deque([entrance.id])
+    _place_through_doors(entrance, dungeon, by_id, placements, edges)
+
+    # Rooms no Door leads to from the entrance: isolated ones, and ones joined only
+    # by their own one-way Door. Each starts its own group on a fresh row below.
+    for room in dungeon.rooms:
+        if room.id not in placements:
+            x = min(p.x for p in placements.values())
+            y = max(p.y for p in placements.values()) + 2
+            placements[room.id] = Placement(room=room, x=x, y=y)
+            _place_through_doors(room, dungeon, by_id, placements, edges)
+
+    return Layout(placements)
+
+
+def _place_through_doors(
+    start: Room,
+    dungeon: Dungeon,
+    by_id: dict[str, Room],
+    placements: dict[str, Placement],
+    edges: list[tuple[str, str]],
+) -> None:
+    """Breadth-first from the already placed `start`, along each Door's direction."""
+    queue: deque[str] = deque([start.id])
     while queue:
         current_id = queue.popleft()
 
@@ -75,8 +97,6 @@ def compute_layout(dungeon: Dungeon) -> Layout:
             placements[t.id] = Placement(room=t, x=tx, y=ty)
             edges.append((current_id, t.id))
             queue.append(t.id)
-
-    return Layout(placements)
 
 
 def _insert_gap(

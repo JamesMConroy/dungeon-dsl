@@ -5,8 +5,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
-import yaml
 
+from dungeon_dsl import load
 from dungeon_dsl.models import Door, Dungeon, Room
 from dungeon_dsl.svg import render_svg
 
@@ -40,8 +40,14 @@ def _dungeon(name_of_second_room: str = "Second") -> Dungeon:
     )
 
 
+def _loaded(text: str) -> Dungeon:
+    result = load(text)
+    assert result.dungeon is not None, result.problems
+    return result.dungeon
+
+
 def _goblin_warren() -> Dungeon:
-    return Dungeon.model_validate(yaml.safe_load(GOBLIN_WARREN.read_text()))
+    return _loaded(GOBLIN_WARREN.read_text())
 
 
 def _room_groups(root: ET.Element) -> list[ET.Element]:
@@ -106,12 +112,86 @@ def test_room_ids_with_markup_characters_stay_inert() -> None:
     assert root.find(f".//{SVG}script") is None
 
 
+HALL = """\
+name: Test
+rooms:
+  - id: hall
+    name: Hall
+    entrance: true
+"""
+VAULT = """\
+  - id: vault
+    name: Vault
+    isolation: true
+"""
+CRYPT_JOINED_TO_VAULT = """\
+    exits:
+      - target: crypt
+        direction: e
+  - id: crypt
+    name: Crypt
+    isolation: true
+    exits:
+      - target: vault
+        direction: w
+"""
+
+
+@pytest.mark.parametrize(
+    ("text", "ids"),
+    [
+        (HALL + VAULT, ["hall", "vault"]),
+        (HALL + VAULT + CRYPT_JOINED_TO_VAULT, ["hall", "vault", "crypt"]),
+        # Connected to the hall only by its own one-way Door, which is valid.
+        (
+            HALL
+            + "  - id: cell\n    name: Cell\n    exits:\n"
+            + "      - target: hall\n        direction: n\n",
+            ["hall", "cell"],
+        ),
+        # Isolated, with a one-way Door into the rest of the Dungeon.
+        (
+            HALL + VAULT + "    exits:\n      - target: hall\n        direction: n\n",
+            ["hall", "vault"],
+        ),
+    ],
+    ids=["lone isolated", "joined isolated", "door out only", "isolated door out"],
+)
+def test_rooms_the_entrance_has_no_door_to_still_get_their_room_group(
+    text: str, ids: list[str]
+) -> None:
+    root = ET.fromstring(render_svg(_loaded(text)))
+
+    assert [g.get("data-room-id") for g in _room_groups(root)] == ids
+
+
+def _room_positions(text: str) -> dict[str | None, str | None]:
+    root = ET.fromstring(render_svg(_loaded(text)))
+    return {g.get("data-room-id"): g.get("transform") for g in _room_groups(root)}
+
+
+def test_isolated_rooms_are_drawn_apart_without_overlapping() -> None:
+    text = HALL + VAULT + CRYPT_JOINED_TO_VAULT
+
+    positions = _room_positions(text)
+
+    assert len(set(positions.values())) == len(positions)
+    assert positions["hall"] == _room_positions(HALL)["hall"]
+
+
+def test_doors_between_isolated_rooms_are_drawn() -> None:
+    joined = ET.fromstring(render_svg(_loaded(HALL + VAULT + CRYPT_JOINED_TO_VAULT)))
+
+    corridors = [g for g in joined.iter(f"{SVG}polygon")]
+
+    assert len(corridors) == 1
+
+
 RENDER_GOBLIN_WARREN = """
-import sys, yaml
-from dungeon_dsl.models import Dungeon
+import sys
+from dungeon_dsl import load
 from dungeon_dsl.svg import render_svg
-dungeon = Dungeon.model_validate(yaml.safe_load(open(sys.argv[1])))
-sys.stdout.write(render_svg(dungeon))
+sys.stdout.write(render_svg(load(open(sys.argv[1]).read()).dungeon))
 """
 
 
