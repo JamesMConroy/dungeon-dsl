@@ -33,3 +33,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = ""
+
+[tool.ruff]
+# Agent worktrees live here; each one is linted from its own checkout.
+extend-exclude = [".claude"]
