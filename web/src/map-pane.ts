@@ -2,6 +2,8 @@
 // The map stays up when a later render fails, so the DM keeps their bearings.
 
 export type MapPane = {
+  /** Holds the inline SVG; stays put when a re-render replaces the SVG. */
+  map: HTMLElement;
   showLoading(): void;
   showMap(svg: string, renderMs: number): void;
   showMessage(message: string): void;
@@ -21,6 +23,7 @@ export function createMapPane(parent: HTMLElement): MapPane {
   parent.append(status, map);
 
   return {
+    map,
     showLoading() {
       parent.dataset.state = "loading";
       status.textContent = "Loading Python…";

@@ -198,6 +198,7 @@ def render_legend(
                 "x": str(x),
                 "y": str(y + 44 + i * LEGEND_LINE_HEIGHT),
                 "font-size": "14",
+                "data-room-id": room.id,
             },
         )
         entry.text = f"{numbers[room.id]}. {room.name}"
@@ -216,7 +217,7 @@ def render_room(
     hatch_layer: ET.Element, floor_layer: ET.Element, placement: Placement, number: int
 ) -> None:
 
-    rng = random.Random(placement.room.name)
+    rng = random.Random(placement.room.id)
     x0, y0 = ROOM_X, ROOM_Y
     rw, rh = SIZE_DIMS[placement.room.size]
     x1 = ROOM_X + rw
@@ -231,7 +232,11 @@ def render_room(
     hatch_edge(hatch, x0, y1, x1, y1, 0, 1, rng)
     hatch_edge(hatch, x0, y0, x0, y1, -1, 0, rng)
 
-    floor = ET.SubElement(floor_layer, "g", {"transform": tf})
+    floor = ET.SubElement(
+        floor_layer,
+        "g",
+        {"transform": tf, "class": "room", "data-room-id": placement.room.id},
+    )
     ET.SubElement(
         floor,
         "rect",
@@ -256,6 +261,7 @@ def render_room(
             "font-family": FONT,
             "font-style": "italic",
             "font-size": "20",
+            "pointer-events": "none",
         },
     )
     text.text = str(number)

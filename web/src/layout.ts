@@ -4,6 +4,7 @@ export type Layout = {
   toolbar: HTMLElement;
   editorPane: HTMLElement;
   mapPane: HTMLElement;
+  cardPane: HTMLElement;
 };
 
 export function createLayout(root: HTMLElement): Layout {
@@ -20,6 +21,11 @@ export function createLayout(root: HTMLElement): Layout {
   mapPane.className = "pane map-pane";
   mapPane.setAttribute("aria-label", "Dungeon Map");
 
-  root.append(toolbar, editorPane, mapPane);
-  return { toolbar, editorPane, mapPane };
+  const cardPane = document.createElement("aside");
+  cardPane.className = "pane card-pane";
+  cardPane.setAttribute("aria-label", "Room card");
+  cardPane.dataset.testid = "room-card";
+
+  root.append(toolbar, editorPane, mapPane, cardPane);
+  return { toolbar, editorPane, mapPane, cardPane };
 }

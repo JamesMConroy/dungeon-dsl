@@ -6,12 +6,19 @@ import { createLayout } from "./layout";
 import { createMapPane } from "./map-pane";
 import { decodePermalink, PermalinkError } from "./permalink";
 import { createRenderClient, type RenderEvent } from "./render-client";
+import { createRoomExplorer } from "./room-explorer";
 import { createShareControl } from "./share";
 import { createToolbar } from "./toolbar";
 import "./style.css";
 
-const { toolbar: toolbarSlot, editorPane, mapPane } = createLayout(document.querySelector<HTMLElement>("#app")!);
+const {
+  toolbar: toolbarSlot,
+  editorPane,
+  mapPane,
+  cardPane,
+} = createLayout(document.querySelector<HTMLElement>("#app")!);
 const pane = createMapPane(mapPane);
+const explorer = createRoomExplorer(pane.map, cardPane);
 
 function showRenderEvent(event: RenderEvent) {
   switch (event.kind) {
@@ -20,6 +27,7 @@ function showRenderEvent(event: RenderEvent) {
       return;
     case "rendered":
       pane.showMap(event.svg, event.ms);
+      explorer.show(event.dungeon);
       toolbar.setLastGoodMap(event.svg);
       return;
     case "render-failed":

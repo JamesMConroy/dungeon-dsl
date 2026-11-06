@@ -1,11 +1,12 @@
 // Page-side handle on the render worker. Debounces edits, keeps one render in
 // flight at a time, drops results for anything but the newest text, and replaces
 // a stuck worker. Callers see only RenderEvents, never the worker.
+import type { DungeonData } from "./dungeon";
 import type { RenderRequest, WorkerMessage } from "./render-protocol";
 
 export type RenderEvent =
   | { kind: "loading" }
-  | { kind: "rendered"; svg: string; ms: number }
+  | { kind: "rendered"; svg: string; dungeon: DungeonData; ms: number }
   | { kind: "render-failed"; message: string }
   | { kind: "timed-out" }
   | { kind: "boot-failed"; message: string };
@@ -88,7 +89,7 @@ export function createRenderClient({
         if (message.seq === latestSeq) {
           onEvent(
             message.type === "rendered"
-              ? { kind: "rendered", svg: message.svg, ms: message.ms }
+              ? { kind: "rendered", svg: message.svg, dungeon: message.dungeon, ms: message.ms }
               : { kind: "render-failed", message: message.message },
           );
         }

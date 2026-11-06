@@ -13,6 +13,7 @@ async function extendRoomName(page: Page, name: string, suffix: string) {
 test("renders goblin_warren and re-renders as the DM types", async ({ page }) => {
   await page.goto("./");
 
+  await expect(dungeonMap(page).locator(".room")).toHaveCount(5);
   await expect(dungeonMap(page)).toContainText("Grand Hall");
 
   await extendRoomName(page, "Grand Hall", " Annex");

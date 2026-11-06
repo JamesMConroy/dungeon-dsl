@@ -1,5 +1,6 @@
 // Module worker that hosts Pyodide and our wheel, and turns YAML into SVG.
 import { loadPyodide, version } from "pyodide";
+import type { DungeonData } from "./dungeon";
 import type { RenderRequest, WorkerMessage } from "./render-protocol";
 
 const INDEX_URL = `https://cdn.jsdelivr.net/pyodide/v${version}/full/`;
@@ -14,7 +15,8 @@ from dungeon_dsl.svg import render_svg
 
 def render(text):
     try:
-        return json.dumps({"svg": render_svg(Dungeon.model_validate(yaml.safe_load(text)))})
+        dungeon = Dungeon.model_validate(yaml.safe_load(text))
+        return json.dumps({"svg": render_svg(dungeon), "dungeon": dungeon.model_dump()})
     except Exception as e:
         return json.dumps({"error": str(e)})
 
@@ -33,9 +35,9 @@ async function boot(): Promise<PythonRender> {
 
 function handleRequest(render: PythonRender, { seq, text }: RenderRequest) {
   const started = performance.now();
-  const result = JSON.parse(render(text)) as { svg: string } | { error: string };
+  const result = JSON.parse(render(text)) as { svg: string; dungeon: DungeonData } | { error: string };
   if ("svg" in result) {
-    post({ type: "rendered", seq, svg: result.svg, ms: performance.now() - started });
+    post({ type: "rendered", seq, svg: result.svg, dungeon: result.dungeon, ms: performance.now() - started });
   } else {
     post({ type: "render-failed", seq, message: result.error });
   }
