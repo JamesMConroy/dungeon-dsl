@@ -15,6 +15,9 @@ cli = [
     "typer>=0.27.2",
 ]
 
+[project.scripts]
+dungeon-dsl = "dungeon_dsl.cli:app"
+
 [dependency-groups]
 dev = [
     "dungeon-dsl[cli]",
