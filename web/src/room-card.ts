@@ -15,7 +15,7 @@ const doorSummary = (door: DoorData) =>
 
 const oneWayDoorsIn = (dungeon: DungeonData, room: RoomData) =>
   dungeon.rooms.flatMap((source) =>
-    room.exits.some((exit) => exit.target === source.id)
+    room.exits.some((door) => door.target === source.id)
       ? []
       : source.exits.filter((door) => door.target === room.id).map((door) => ({ source, door })),
   );

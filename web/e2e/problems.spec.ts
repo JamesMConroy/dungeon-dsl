@@ -18,6 +18,16 @@ async function waitForFirstMap(page: Page) {
   await expect(dungeonMap(page).locator("svg")).toContainText("Grand Hall");
 }
 
+test("a value YAML can't construct is a Problem on that value, not a failed render", async ({ page }) => {
+  await waitForFirstMap(page);
+
+  await replaceValue(page, "size", "large", "2000-13-45");
+
+  await expect(errors(page)).toHaveText("2000-13-45");
+  await expect(problems(page)).toHaveAttribute("data-code", "yaml.invalid_value");
+  await expect(mapPane(page)).toHaveAttribute("data-state", "invalid");
+});
+
 test("breaking a field shows an Error on that line over the greyed last good map, and fixing it recovers", async ({
   page,
 }) => {

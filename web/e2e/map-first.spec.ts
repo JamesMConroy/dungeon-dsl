@@ -120,7 +120,7 @@ test("the room card is a popover by the clicked Room", async ({ page }) => {
   await expectPopoverBy(page, "throne_room");
 });
 
-test("an exit link moves the popover to the Room it names", async ({ page }) => {
+test("a Door link moves the popover to the Room it names", async ({ page }) => {
   await openPlayground(page, NARROW);
   await room(page, "entrance").click();
 
