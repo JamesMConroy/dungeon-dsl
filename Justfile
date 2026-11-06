@@ -47,6 +47,10 @@ web-dev: web-install
 web-browsers *args:
   npm --prefix web exec -- playwright install chromium {{args}}
 
+# Vitest: the permalink codec. No build needed.
+web-unit: web-install
+  npm --prefix web run test:unit
+
 # Smoke test against `vite preview`; run web-build first.
 web-test:
   npm --prefix web run test:e2e
