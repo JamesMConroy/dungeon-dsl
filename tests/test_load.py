@@ -179,11 +179,214 @@ rooms:
     ]
 
 
-def test_existing_dungeon_level_rules_still_report_at_line_one() -> None:
-    # Until they move into check(), these are pydantic errors on the whole Dungeon.
+def test_no_entrance_is_one_error_on_the_rooms_key() -> None:
+    # Neither Room can be reached from an entrance that isn't there: no pile-on.
     text = VALID.replace("    entrance: true\n", "")
 
-    assert outcome(text) == [("pydantic.value_error", "error", 1)]
+    assert outcome(text) == [("dungeon.no_entrance", "error", 2)]
+    assert load(text).dungeon is None
+    assert span_of(text) == (2, 1, 2, 6)
+
+
+def test_no_rooms_at_all_is_no_entrance() -> None:
+    assert outcome("name: x\nrooms: []\n") == [("dungeon.no_entrance", "error", 2)]
+
+
+def test_each_duplicate_room_id_after_the_first_is_an_error_on_that_id() -> None:
+    text = VALID + "  - id: cell\n    name: Annex\n  - id: cell\n    name: Attic\n"
+
+    assert outcome(text) == [
+        ("room.duplicate_id", "error", 15),
+        ("room.duplicate_id", "error", 17),
+    ]
+    assert load(text).dungeon is None
+
+
+def test_a_duplicate_id_is_underlined_on_the_id_value() -> None:
+    assert span_of(VALID + "  - id: cell\n    name: Annex\n") == (15, 9, 15, 13)
+
+
+def test_a_merged_id_that_duplicates_points_at_the_anchor() -> None:
+    text = """\
+name: x
+rooms:
+  - &base
+    id: a
+    name: A
+    entrance: true
+  - <<: *base
+    name: B
+"""
+    assert outcome(text) == [("room.duplicate_id", "error", 4)]
+
+
+def test_an_id_set_over_a_merge_points_at_the_explicit_key() -> None:
+    text = """\
+name: x
+rooms:
+  - id: hall
+    name: Hall
+    entrance: true
+  - &base
+    id: a
+    name: A
+  - <<: *base
+    id: b
+"""
+    assert outcome(text) == [
+        ("room.unreachable", "error", 7),
+        ("room.unreachable", "error", 10),
+    ]
+
+
+def test_an_unknown_target_in_an_aliased_door_points_at_the_anchor() -> None:
+    text = """\
+name: x
+rooms:
+  - id: a
+    name: A
+    entrance: true
+    exits:
+      - &door
+        target: ghost
+        direction: n
+      - *door
+"""
+    assert outcome(text) == [
+        ("door.unknown_target", "error", 8),
+        ("door.unknown_target", "error", 8),
+    ]
+
+
+def test_several_dungeon_level_errors_are_reported_together() -> None:
+    text = (
+        VALID.replace("target: cell", "target: cel")
+        + "  - id: hall\n    name: Again\n  - id: vault\n    name: Vault\n"
+    )
+
+    assert sorted(outcome(text), key=lambda problem: problem[2] or 0) == [
+        ("door.unknown_target", "error", 8),
+        ("room.duplicate_id", "error", 15),
+        ("room.unreachable", "error", 17),
+    ]
+    assert load(text).dungeon is None
+
+
+def test_a_structural_error_suppresses_the_dungeon_level_rules() -> None:
+    text = (
+        VALID.replace("size: large", "size: huge")
+        .replace("    entrance: true\n", "")
+        .replace("target: hall", "target: nowhere")
+        + "  - id: cell\n    name: Annex\n"
+    )
+
+    assert [code for code, _, _ in outcome(text)] == ["pydantic.literal_error"]
+
+
+def test_a_door_to_an_unknown_room_is_an_error_on_its_target_only() -> None:
+    # The cell's own door back still connects it, so nothing else is wrong.
+    text = VALID.replace("target: cell", "target: cel")
+
+    assert outcome(text) == [("door.unknown_target", "error", 8)]
+    assert load(text).dungeon is None
+    assert span_of(text) == (8, 17, 8, 20)
+
+
+def test_a_room_with_only_a_broken_door_to_it_is_also_unreachable() -> None:
+    # Reachability ignores the broken Door, and the cell really is cut off.
+    text = VALID.replace("target: cell", "target: cel").replace(
+        "    exits:\n      - target: hall\n        direction: s\n", ""
+    )
+
+    assert outcome(text) == [
+        ("door.unknown_target", "error", 8),
+        ("room.unreachable", "error", 10),
+    ]
+
+
+def test_an_unknown_room_does_not_connect_the_doors_that_target_it() -> None:
+    text = """\
+name: x
+rooms:
+  - id: hall
+    name: Hall
+    entrance: true
+    exits:
+      - target: ghost
+        direction: n
+  - id: vault
+    name: Vault
+    exits:
+      - target: ghost
+        direction: s
+"""
+
+    assert sorted(outcome(text), key=lambda problem: problem[2] or 0) == [
+        ("door.unknown_target", "error", 7),
+        ("room.unreachable", "error", 9),
+        ("door.unknown_target", "error", 12),
+    ]
+
+
+def test_without_an_entrance_an_unknown_target_is_still_reported() -> None:
+    text = VALID.replace("    entrance: true\n", "").replace(
+        "target: hall", "target: nowhere"
+    )
+
+    assert sorted(outcome(text), key=lambda problem: problem[2] or 0) == [
+        ("dungeon.no_entrance", "error", 2),
+        ("door.unknown_target", "error", 12),
+    ]
+
+
+def test_a_room_the_entrance_cannot_reach_is_an_error_on_its_id() -> None:
+    text = VALID + "  - id: vault\n    name: Vault\n"
+
+    assert outcome(text) == [("room.unreachable", "error", 15)]
+    assert load(text).dungeon is None
+    assert span_of(text) == (15, 9, 15, 14)
+
+
+def test_rooms_linked_only_to_each_other_are_each_unreachable() -> None:
+    text = (
+        VALID
+        + """\
+  - id: vault
+    name: Vault
+    exits:
+      - target: crypt
+        direction: n
+  - id: crypt
+    name: Crypt
+"""
+    )
+
+    assert outcome(text) == [
+        ("room.unreachable", "error", 15),
+        ("room.unreachable", "error", 20),
+    ]
+
+
+def test_an_isolated_room_may_be_unreachable() -> None:
+    text = VALID + "  - id: vault\n    name: Vault\n    isolation: true\n"
+
+    assert outcome(text) == []
+
+
+def test_a_door_connects_its_rooms_whichever_side_declares_it() -> None:
+    # The hall has no door to the vault; the vault's door to the hall is enough.
+    text = (
+        VALID
+        + """\
+  - id: vault
+    name: Vault
+    exits:
+      - target: hall
+        direction: e
+"""
+    )
+
+    assert outcome(text) == []
 
 
 @pytest.mark.parametrize("text", ["", "# only a comment\n", "just a string\n", "- 1\n"])
