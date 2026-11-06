@@ -29,6 +29,7 @@ jobs:
       - uses: jdx/mise-action@v5
         with:
           install_args: just uv node
+      - run: just web-unit
       - run: just web-build
       - run: just web-browsers --with-deps
       - run: just web-test
