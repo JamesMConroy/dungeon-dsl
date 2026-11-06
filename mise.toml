@@ -4,6 +4,7 @@ hk = "latest"
 just = "latest"
 mermaid-ascii = "latest"
 "npm:@mermaid-js/mermaid-cli" = "latest"
+uv = "latest"
 watchexec = "latest"
 
 [tasks.pre-commit]

@@ -14,3 +14,17 @@ flowchart-ascii:
 flowchart-png:
   uv run main.py examples/goblin_warren.yaml | mise exec -- mmdc -i - -o out.png -b white
 
+
+lint:
+  uv run ruff check .
+  uv run ruff format --check .
+
+typecheck:
+  uv run pyright
+
+test:
+  uv run pytest
+
+# Exercises the lower bounds in pyproject.toml, including the pydantic 2.12 line Pyodide ships.
+test-lowest:
+  uv run --isolated --resolution lowest-direct pytest
