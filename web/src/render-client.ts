@@ -1,11 +1,11 @@
 // Page-side handle on the render worker. Debounces edits, keeps one render in
 // flight at a time, drops results for anything but the newest text, and replaces
 // a stuck worker. Callers see only RenderEvents, never the worker.
-import type { RenderRequest, Result, WorkerMessage } from "./render-protocol";
+import type { DrawnResult, RenderRequest, Result, WorkerMessage } from "./render-protocol";
 
 export type RenderEvent =
   | { kind: "loading" }
-  | { kind: "rendered"; svg: string; ms: number; result: Result }
+  | { kind: "rendered"; svg: string; ms: number; result: DrawnResult }
   | { kind: "invalid"; result: Result }
   | { kind: "render-failed"; message: string }
   | { kind: "timed-out" }

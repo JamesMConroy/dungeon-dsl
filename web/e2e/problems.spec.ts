@@ -45,6 +45,24 @@ test("breaking a field shows an Error on that line over the greyed last good map
   await expect(dungeonMap(page)).toHaveCSS("filter", "none");
 });
 
+test("the room card stays on the last good Dungeon while the Dungeon is invalid", async ({ page }) => {
+  await waitForFirstMap(page);
+  const card = page.getByTestId("room-card");
+  const room = (id: string) => dungeonMap(page).locator(`.room[data-room-id="${id}"]`);
+
+  await room("entrance").click();
+  await expect(card).toContainText("Grand Hall");
+
+  await replaceValue(page, "size", "large", "huge");
+  await expect(mapPane(page)).toHaveAttribute("data-state", "invalid");
+
+  await expect(card).toContainText("Grand Hall");
+  await expect(room("entrance")).toHaveClass(/selected/);
+
+  await room("throne_room").click();
+  await expect(card).toContainText("Goblin Throne");
+});
+
 test("clicking a Problem jumps to its line", async ({ page }) => {
   await waitForFirstMap(page);
   await replaceValue(page, "size", "large", "huge");

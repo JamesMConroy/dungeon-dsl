@@ -1,6 +1,6 @@
 // Module worker that hosts Pyodide and our wheel, and turns YAML into SVG.
 import { loadPyodide, version } from "pyodide";
-import type { RenderRequest, Result, WorkerMessage } from "./render-protocol";
+import type { DrawnResult, RenderRequest, Result, WorkerMessage } from "./render-protocol";
 
 const INDEX_URL = `https://cdn.jsdelivr.net/pyodide/v${version}/full/`;
 const WHEEL_URL = new URL(import.meta.env.BASE_URL + import.meta.env.VITE_WHEEL_URL, self.location.origin).href;
@@ -34,7 +34,10 @@ async function boot(): Promise<PythonRender> {
 
 function handleRequest(render: PythonRender, { seq, text }: RenderRequest) {
   const started = performance.now();
-  const output = JSON.parse(render(text)) as { result: Result; svg: string | null } | { error: string };
+  const output = JSON.parse(render(text)) as
+    | { result: DrawnResult; svg: string }
+    | { result: Result; svg: null }
+    | { error: string };
   if ("error" in output) {
     post({ type: "render-failed", seq, message: output.error });
   } else if (output.svg === null) {

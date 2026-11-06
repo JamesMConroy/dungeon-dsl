@@ -8,12 +8,19 @@ import { decodePermalink, PermalinkError } from "./permalink";
 import { createProblemList } from "./problem-list";
 import { createRenderClient, type RenderEvent } from "./render-client";
 import type { Problem } from "./render-protocol";
+import { createRoomExplorer } from "./room-explorer";
 import { createShareControl } from "./share";
 import { createToolbar } from "./toolbar";
 import "./style.css";
 
-const { toolbar: toolbarSlot, editorPane, mapPane } = createLayout(document.querySelector<HTMLElement>("#app")!);
+const {
+  toolbar: toolbarSlot,
+  editorPane,
+  mapPane,
+  cardPane,
+} = createLayout(document.querySelector<HTMLElement>("#app")!);
 const pane = createMapPane(mapPane);
+const explorer = createRoomExplorer(pane.map, cardPane);
 
 function showProblems(problems: Problem[]) {
   editor.showProblems(problems);
@@ -27,6 +34,7 @@ function showRenderEvent(event: RenderEvent) {
       return;
     case "rendered":
       pane.showMap(event.svg, event.ms);
+      explorer.show(event.result.dungeon);
       toolbar.setLastGoodMap(event.svg);
       showProblems(event.result.problems);
       return;
