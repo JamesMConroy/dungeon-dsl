@@ -1,6 +1,7 @@
 // The Playground's page structure. Owns where panes sit, not what they hold.
 
 export type Layout = {
+  toolbar: HTMLElement;
   editorPane: HTMLElement;
   mapPane: HTMLElement;
   cardPane: HTMLElement;
@@ -8,6 +9,9 @@ export type Layout = {
 
 export function createLayout(root: HTMLElement): Layout {
   root.className = "workbench";
+
+  const toolbar = document.createElement("header");
+  toolbar.className = "toolbar";
 
   const editorPane = document.createElement("section");
   editorPane.className = "pane editor-pane";
@@ -22,6 +26,6 @@ export function createLayout(root: HTMLElement): Layout {
   cardPane.setAttribute("aria-label", "Room card");
   cardPane.dataset.testid = "room-card";
 
-  root.append(editorPane, mapPane, cardPane);
-  return { editorPane, mapPane, cardPane };
+  root.append(toolbar, editorPane, mapPane, cardPane);
+  return { toolbar, editorPane, mapPane, cardPane };
 }

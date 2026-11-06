@@ -29,9 +29,34 @@ body {
 .workbench {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(260px, 0.8fr);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 1px;
   background: var(--rule);
+}
+
+.toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--paper);
+}
+
+.toolbar select,
+.toolbar button {
+  padding: 3px 10px;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.toolbar button:disabled {
+  border-color: var(--rule);
+  color: var(--ink-2);
 }
 
 .pane {

@@ -1,13 +1,20 @@
 // Wires the Playground's parts together; the behaviour lives in the modules.
 import goblinWarren from "../../examples/goblin_warren.yaml?raw";
 import { createEditor } from "./editor";
+import { bundledExamples } from "./examples";
 import { createLayout } from "./layout";
 import { createMapPane } from "./map-pane";
 import { createRenderClient, type RenderEvent } from "./render-client";
 import { createRoomExplorer } from "./room-explorer";
+import { createToolbar } from "./toolbar";
 import "./style.css";
 
-const { editorPane, mapPane, cardPane } = createLayout(document.querySelector<HTMLElement>("#app")!);
+const {
+  toolbar: toolbarSlot,
+  editorPane,
+  mapPane,
+  cardPane,
+} = createLayout(document.querySelector<HTMLElement>("#app")!);
 const pane = createMapPane(mapPane);
 const explorer = createRoomExplorer(pane.map, cardPane);
 
@@ -19,6 +26,7 @@ function showRenderEvent(event: RenderEvent) {
     case "rendered":
       pane.showMap(event.svg, event.ms);
       explorer.show(event.dungeon);
+      toolbar.setLastGoodMap(event.svg);
       return;
     case "render-failed":
       pane.showMessage(event.message);
@@ -33,5 +41,15 @@ function showRenderEvent(event: RenderEvent) {
 
 const renderer = createRenderClient({ onEvent: showRenderEvent });
 
-createEditor(editorPane, goblinWarren, (text) => renderer.request(text));
+const editor = createEditor(editorPane, goblinWarren, (text) => renderer.request(text));
+const toolbar = createToolbar(toolbarSlot, {
+  examples: bundledExamples,
+  currentYaml: () => editor.text(),
+  onLoadExample(example) {
+    editor.setText(example.yaml);
+    // The document no longer matches any Permalink. Replacing, not assigning
+    // location.hash, leaves no stray "#" and no history entry.
+    history.replaceState(null, "", location.pathname + location.search);
+  },
+});
 renderer.request(goblinWarren);

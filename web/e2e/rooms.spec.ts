@@ -135,6 +135,16 @@ test("the card follows edits, and closes when its Room goes away", async ({ page
   await expect(cardTitle(page)).toHaveCount(0);
 });
 
+test("loading an example without the selected Room closes the card", async ({ page }) => {
+  await room(page, "throne_room").click();
+  await expect(cardTitle(page)).toContainText("Goblin Throne");
+
+  await page.getByRole("combobox", { name: "Load example" }).selectOption("size_test");
+
+  await expect(room(page, "barracks")).toHaveCount(1);
+  await expect(cardTitle(page)).toHaveCount(0);
+});
+
 test("markup in a Dungeon's strings stays inert in the map and the card", async ({ page }) => {
   await replaceYaml(
     page,
