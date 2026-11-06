@@ -1,39 +1,43 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, model_validator
+from typing import Literal
 
-DIRECTIONS = {"n", "s", "e", "w", "ne", "nw", "se", "sw"}
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+Direction = Literal["n", "s", "e", "w", "ne", "nw", "se", "sw"]
+RoomSize = Literal["tiny", "small", "medium", "large", "vast"]
+Light = Literal["dark", "dim", "bright"]
+DoorType = Literal["wooden", "stone", "iron", "secret", "archway"]
+DoorState = Literal["open", "closed", "locked", "barred"]
 
 
 class Door(BaseModel):
-    target: str
-    direction: str
-    type: str = "wooden"
-    state: str = "closed"
-    dc: int | None = None
+    model_config = ConfigDict(extra="forbid")
 
-    @model_validator(mode="after")
-    def check_direction(self) -> Door:
-        if self.direction not in DIRECTIONS:
-            raise ValueError(
-                f"invalid direction {self.direction!r}, expected one of {sorted(DIRECTIONS)}"
-            )
-        return self
+    target: str
+    direction: Direction
+    type: DoorType = "wooden"
+    state: DoorState = "closed"
+    dc: int | None = None
 
 
 class Room(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     name: str
     description: str = ""
-    size: str = "medium"
+    size: RoomSize = "medium"
     terrain: str = ""
-    light: str = "dark"
+    light: Light = "dark"
     entrance: bool = False
     isolation: bool = False
     exits: list[Door] = Field(default_factory=list)
 
 
 class Dungeon(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     name: str
     level: int | None = None
     theme: str | None = None

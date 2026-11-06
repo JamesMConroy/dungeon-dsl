@@ -1,3 +1,5 @@
+import json
+import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -29,6 +31,42 @@ def test_console_script_renders_a_dungeon_map() -> None:
     root = ET.fromstring(result.stdout)
     assert root.tag == SVG
     assert all(room in result.stdout for room in GOBLIN_WARREN_ROOMS)
+
+
+def test_problems_are_printed_for_editors_and_dumped_as_json(tmp_path: Path) -> None:
+    broken = tmp_path / "broken.yaml"
+    broken.write_text(
+        GOBLIN_WARREN.read_text(encoding="utf-8").replace(
+            "size: large", "size: huge", 1
+        ),
+        encoding="utf-8",
+    )
+    line = broken.read_text(encoding="utf-8").splitlines().index("    size: huge") + 1
+
+    printed = dungeon_dsl(str(broken), "-f", "svg")
+    dumped = dungeon_dsl(str(broken), "--json")
+    valid = dungeon_dsl(str(GOBLIN_WARREN), "--json")
+
+    assert printed.returncode != 0
+    assert printed.stdout == ""
+    assert re.fullmatch(
+        rf"{re.escape(str(broken))}:{line}:11: error: .+ \[pydantic\.literal_error\]\n",
+        printed.stderr,
+    )
+
+    assert dumped.returncode != 0
+    result = json.loads(dumped.stdout)
+    assert result["dungeon"] is None
+    assert result["problems"][0]["code"] == "pydantic.literal_error"
+    assert result["problems"][0]["severity"] == "error"
+    assert result["problems"][0]["loc"] == ["rooms", 0, "size"]
+    assert result["problems"][0]["span"] == {
+        "start": {"line": line, "col": 11},
+        "end": {"line": line, "col": 15},
+    }
+
+    assert valid.returncode == 0
+    assert json.loads(valid.stdout)["dungeon"]["name"] == "Goblin Warren"
 
 
 def test_only_the_cli_module_needs_typer() -> None:
