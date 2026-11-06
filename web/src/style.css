@@ -86,14 +86,76 @@ body {
   background: var(--paper);
 }
 
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+}
+
 .editor-pane .cm-editor {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   background: #fffdf8;
+}
+
+.problem-list {
+  flex: none;
+  max-height: 30%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border-top: 1px solid var(--rule);
+  list-style: none;
+  font-size: 13px;
+}
+
+.problem-list button {
+  display: block;
+  width: 100%;
+  padding: 4px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.problem-list button:hover,
+.problem-list button:focus-visible {
+  background: var(--rule);
+}
+
+.problem-list button[data-severity="error"] .problem-line {
+  color: var(--err);
+}
+
+.problem-line {
+  font-weight: bold;
 }
 
 .map-pane {
   display: flex;
   flex-direction: column;
+}
+
+.map-status:empty {
+  display: none;
+}
+
+.map-banner {
+  padding: 4px 12px;
+  background: var(--err);
+  color: var(--paper);
+  font-size: 13px;
+}
+
+.map-banner[hidden] {
+  display: none;
+}
+
+.map-pane[data-state="invalid"] .map {
+  filter: grayscale(1);
+  opacity: 0.45;
 }
 
 .map-status {

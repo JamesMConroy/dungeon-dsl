@@ -1,12 +1,12 @@
 // Page-side handle on the render worker. Debounces edits, keeps one render in
 // flight at a time, drops results for anything but the newest text, and replaces
 // a stuck worker. Callers see only RenderEvents, never the worker.
-import type { DungeonData } from "./dungeon";
-import type { RenderRequest, WorkerMessage } from "./render-protocol";
+import type { DrawnResult, RenderRequest, Result, WorkerMessage } from "./render-protocol";
 
 export type RenderEvent =
   | { kind: "loading" }
-  | { kind: "rendered"; svg: string; dungeon: DungeonData; ms: number }
+  | { kind: "rendered"; svg: string; ms: number; result: DrawnResult }
+  | { kind: "invalid"; result: Result }
   | { kind: "render-failed"; message: string }
   | { kind: "timed-out" }
   | { kind: "boot-failed"; message: string };
@@ -24,6 +24,17 @@ export type RenderClientOptions = {
 };
 
 const spawnRenderWorker = () => new Worker(new URL("./render.worker.ts", import.meta.url), { type: "module" });
+
+function toEvent(message: Extract<WorkerMessage, { seq: number }>): RenderEvent {
+  switch (message.type) {
+    case "rendered":
+      return { kind: "rendered", svg: message.svg, ms: message.ms, result: message.result };
+    case "invalid":
+      return { kind: "invalid", result: message.result };
+    case "render-failed":
+      return { kind: "render-failed", message: message.message };
+  }
+}
 
 export function createRenderClient({
   onEvent,
@@ -83,16 +94,11 @@ export function createRenderClient({
         onEvent({ kind: "boot-failed", message: message.message });
         return;
       case "rendered":
+      case "invalid":
       case "render-failed":
         clearTimeout(watchdogTimer);
         inFlightSeq = null;
-        if (message.seq === latestSeq) {
-          onEvent(
-            message.type === "rendered"
-              ? { kind: "rendered", svg: message.svg, dungeon: message.dungeon, ms: message.ms }
-              : { kind: "render-failed", message: message.message },
-          );
-        }
+        if (message.seq === latestSeq) onEvent(toEvent(message));
         sendWaiting();
     }
   }
