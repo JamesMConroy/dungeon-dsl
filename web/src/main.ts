@@ -4,10 +4,12 @@ import { createEditor } from "./editor";
 import { createLayout } from "./layout";
 import { createMapPane } from "./map-pane";
 import { createRenderClient, type RenderEvent } from "./render-client";
+import { createRoomExplorer } from "./room-explorer";
 import "./style.css";
 
-const { editorPane, mapPane } = createLayout(document.querySelector<HTMLElement>("#app")!);
+const { editorPane, mapPane, cardPane } = createLayout(document.querySelector<HTMLElement>("#app")!);
 const pane = createMapPane(mapPane);
+const explorer = createRoomExplorer(pane.map, cardPane);
 
 function showRenderEvent(event: RenderEvent) {
   switch (event.kind) {
@@ -16,6 +18,7 @@ function showRenderEvent(event: RenderEvent) {
       return;
     case "rendered":
       pane.showMap(event.svg, event.ms);
+      explorer.show(event.dungeon);
       return;
     case "render-failed":
       pane.showMessage(event.message);

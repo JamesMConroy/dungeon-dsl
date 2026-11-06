@@ -4,6 +4,9 @@
   --ink-2: #5b5246;
   --rule: #cfc4ad;
   --err: #b3261e;
+  --accent: #8a3b12;
+  --highlight: #f3e2b0;
+  --selected: #ecc98a;
 }
 
 * {
@@ -25,7 +28,7 @@ body {
 
 .workbench {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(260px, 0.8fr);
   grid-template-rows: minmax(0, 1fr);
   gap: 1px;
   background: var(--rule);
@@ -74,4 +77,124 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.map .room {
+  cursor: pointer;
+}
+
+.map .room:hover rect,
+.map .room.highlighted rect {
+  fill: var(--highlight);
+}
+
+.map .room.selected rect {
+  fill: var(--selected);
+}
+
+.map text[data-room-id] {
+  cursor: pointer;
+}
+
+.map text[data-room-id]:hover,
+.map text[data-room-id].highlighted,
+.map text[data-room-id].selected {
+  fill: var(--accent);
+}
+
+.card-pane {
+  overflow: auto;
+  padding: 14px 16px;
+}
+
+.room-card-empty {
+  margin: 0;
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.room-details h2 {
+  margin: 0 0 2px;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.room-number {
+  margin-right: 8px;
+  color: var(--accent);
+  font-style: italic;
+}
+
+.room-id {
+  color: var(--ink-2);
+  font: 12px ui-monospace, monospace;
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.chip {
+  padding: 1px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: #fffdf8;
+  font-size: 12px;
+}
+
+.chip-entrance {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.read-aloud {
+  margin: 10px 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  background: #fffdf8;
+  font-style: italic;
+  font-size: 16px;
+}
+
+.room-details h3 {
+  margin: 14px 0 4px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.door-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.door-list li {
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--rule);
+}
+
+.room-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.room-link:hover {
+  text-decoration: underline;
+}
+
+.door-summary {
+  color: var(--ink-2);
+  font-size: 13px;
 }
