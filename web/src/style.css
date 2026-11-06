@@ -4,6 +4,7 @@
   --ink-2: #5b5246;
   --rule: #cfc4ad;
   --err: #b3261e;
+  --warn: #8a6100;
 }
 
 * {
@@ -54,6 +55,27 @@ body {
 .toolbar button:disabled {
   border-color: var(--rule);
   color: var(--ink-2);
+}
+
+.share-status {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.share-status[data-too-long] {
+  color: var(--warn);
+}
+
+.share-status[data-state="bad-link"],
+.share-status[data-state="refused"],
+.share-status[data-state="copy-failed"] {
+  color: var(--err);
+}
+
+.share-link {
+  flex: 1;
+  min-width: 0;
+  font: 12px ui-monospace, monospace;
 }
 
 .pane {

@@ -4,9 +4,11 @@ import { createEditor } from "./editor";
 import { bundledExamples } from "./examples";
 import { createLayout } from "./layout";
 import { createMapPane } from "./map-pane";
+import { decodePermalink, PermalinkError } from "./permalink";
 import { createProblemList } from "./problem-list";
 import { createRenderClient, type RenderEvent } from "./render-client";
 import type { Problem } from "./render-protocol";
+import { createShareControl } from "./share";
 import { createToolbar } from "./toolbar";
 import "./style.css";
 
@@ -46,16 +48,39 @@ function showRenderEvent(event: RenderEvent) {
 
 const renderer = createRenderClient({ onEvent: showRenderEvent });
 
-const editor = createEditor(editorPane, goblinWarren, (text) => renderer.request(text));
+/** The URL's Permalink: its Dungeon, why it can't be opened, or null if there isn't one. */
+async function readPermalink(): Promise<string | PermalinkError | null> {
+  if (!location.hash) return null;
+  return decodePermalink(location.hash).catch((error: PermalinkError) => error);
+}
+
+const opened = await readPermalink();
+const initial = typeof opened === "string" ? opened : goblinWarren;
+
+const editor = createEditor(editorPane, initial, (text) => renderer.request(text));
 const problemList = createProblemList(editorPane, (problem) => editor.revealProblem(problem));
 const toolbar = createToolbar(toolbarSlot, {
   examples: bundledExamples,
   currentYaml: () => editor.text(),
   onLoadExample(example) {
     editor.setText(example.yaml);
+    share.clear();
     // The document no longer matches any Permalink. Replacing, not assigning
     // location.hash, leaves no stray "#" and no history entry.
     history.replaceState(null, "", location.pathname + location.search);
   },
 });
-renderer.request(goblinWarren);
+const share = createShareControl(toolbarSlot, () => editor.text());
+if (opened instanceof PermalinkError) share.showBadLink(opened.message);
+renderer.request(initial);
+
+// A link pasted into an open tab changes only the fragment, so the page doesn't reload.
+window.addEventListener("hashchange", async () => {
+  const pasted = await readPermalink();
+  if (pasted instanceof PermalinkError) {
+    share.showBadLink(pasted.message);
+  } else if (pasted !== null) {
+    share.clear();
+    editor.setText(pasted);
+  }
+});
