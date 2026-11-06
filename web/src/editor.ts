@@ -5,6 +5,7 @@ import { setDiagnostics, type Diagnostic } from "@codemirror/lint";
 import type { Text } from "@codemirror/state";
 import { basicSetup, EditorView } from "codemirror";
 import type { Position, Problem } from "./render-protocol";
+import { schemaCompletion } from "./schema-completion";
 
 export type Editor = {
   text(): string;
@@ -42,6 +43,7 @@ export function createEditor(parent: HTMLElement, doc: string, onChange: (text: 
     extensions: [
       basicSetup,
       yaml(),
+      schemaCompletion,
       EditorView.lineWrapping,
       EditorView.updateListener.of((update) => {
         if (update.docChanged) onChange(update.state.doc.toString());

@@ -32,11 +32,12 @@ test-lowest:
 web-install:
   npm --prefix web ci
 
-# Wheel at a content-hashed path, then the site, into web/dist.
+# Wheel at a content-hashed path and the JSON Schema, then the site, into web/dist.
 web-build: web-install
   node web/scripts/stage-wheel.mjs
   npm --prefix web run build
 
+# Re-run to pick up model changes: the wheel and JSON Schema are staged once at start.
 web-dev: web-install
   node web/scripts/stage-wheel.mjs
   npm --prefix web run dev

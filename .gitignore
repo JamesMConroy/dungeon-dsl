@@ -15,5 +15,6 @@ wheels/
 node_modules/
 web/.env.local
 web/public/py/
+web/src/generated/
 web/test-results/
 web/playwright-report/
