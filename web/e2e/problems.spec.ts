@@ -87,6 +87,22 @@ test("a YAML syntax error is underlined and listed too", async ({ page }) => {
   await expect(errors(page)).toHaveCount(1);
 });
 
+test("a door to an unknown room is one Error on its target, and fixing it recovers", async ({ page }) => {
+  await waitForFirstMap(page);
+
+  await replaceValue(page, "target", "corridor_north", "nowhere");
+
+  await expect(errors(page)).toHaveText("nowhere");
+  await expect(problems(page)).toHaveCount(1);
+  await expect(problems(page)).toHaveAttribute("data-code", "door.unknown_target");
+  await expect(mapPane(page)).toHaveAttribute("data-state", "invalid");
+
+  await replaceValue(page, "target", "nowhere", "corridor_north");
+
+  await expect(mapPane(page)).toHaveAttribute("data-state", "ready");
+  await expect(problems(page)).toHaveCount(0);
+});
+
 test("underlines land on the right characters after an emoji", async ({ page }) => {
   await waitForFirstMap(page);
 

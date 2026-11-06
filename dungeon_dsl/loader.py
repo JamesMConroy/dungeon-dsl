@@ -19,7 +19,11 @@ from dungeon_dsl.models import Dungeon
 _LINE_BREAK = re.compile("\r\n|[\r\n\x85  ]")
 
 # These Problems are about the key itself, so its value's position would mislead.
-_ANCHORED_ON_KEY = {"pydantic.extra_forbidden", "pydantic.invalid_key"}
+_ANCHORED_ON_KEY = {
+    "pydantic.extra_forbidden",
+    "pydantic.invalid_key",
+    "dungeon.no_entrance",
+}
 
 
 class Position(BaseModel):
@@ -80,7 +84,71 @@ def load(text: str) -> Result:
 
 def check(dungeon: Dungeon) -> list[Problem]:
     """The dungeon-level rules. Set each Problem's `loc`; `load` finds its span."""
-    return []
+    problems: list[Problem] = []
+    entrance = next((room.id for room in dungeon.rooms if room.entrance), None)
+    if entrance is None:
+        problems.append(
+            _error(
+                "dungeon.no_entrance",
+                "the dungeon needs a room with entrance: true",
+                ["rooms"],
+            )
+        )
+
+    known_ids = {room.id for room in dungeon.rooms}
+    # No entrance is already one Problem, so don't also call every Room unreachable.
+    reachable = known_ids if entrance is None else _reachable_from(entrance, dungeon)
+    seen_ids: set[str] = set()
+    for index, room in enumerate(dungeon.rooms):
+        if room.id in seen_ids:
+            problems.append(
+                _error(
+                    "room.duplicate_id",
+                    f"another room already has the id {room.id!r}",
+                    ["rooms", index, "id"],
+                )
+            )
+        seen_ids.add(room.id)
+        if room.id not in reachable and not room.isolation:
+            problems.append(
+                _error(
+                    "room.unreachable",
+                    f"room {room.id!r} can't be reached from the entrance",
+                    ["rooms", index, "id"],
+                )
+            )
+        for door_index, door in enumerate(room.exits):
+            if door.target not in known_ids:
+                problems.append(
+                    _error(
+                        "door.unknown_target",
+                        f"there is no room {door.target!r}",
+                        ["rooms", index, "exits", door_index, "target"],
+                    )
+                )
+    return problems
+
+
+def _reachable_from(entrance: str, dungeon: Dungeon) -> set[str]:
+    """Room ids connected to the entrance. A Door connects both ways, if it leads anywhere."""
+    neighbors: dict[str, set[str]] = {room.id: set() for room in dungeon.rooms}
+    for room in dungeon.rooms:
+        for door in room.exits:
+            if door.target in neighbors:
+                neighbors[room.id].add(door.target)
+                neighbors[door.target].add(room.id)
+
+    reachable = {entrance}
+    stack = [entrance]
+    while stack:
+        for neighbor in neighbors[stack.pop()] - reachable:
+            reachable.add(neighbor)
+            stack.append(neighbor)
+    return reachable
+
+
+def _error(code: str, message: str, loc: list[str | int]) -> Problem:
+    return Problem(severity="error", code=code, message=message, loc=loc)
 
 
 def _parse(text: str) -> tuple[Node | None, Any]:
