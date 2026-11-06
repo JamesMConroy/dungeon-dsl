@@ -1,14 +1,16 @@
 // Wires the Playground's parts together; the behaviour lives in the modules.
 import goblinWarren from "../../examples/goblin_warren.yaml?raw";
 import { createEditor } from "./editor";
+import { bundledExamples } from "./examples";
 import { createLayout } from "./layout";
 import { createMapPane } from "./map-pane";
-import { decodePermalink } from "./permalink";
+import { decodePermalink, PermalinkError } from "./permalink";
 import { createRenderClient, type RenderEvent } from "./render-client";
 import { createShareControl } from "./share";
+import { createToolbar } from "./toolbar";
 import "./style.css";
 
-const { toolbar, editorPane, mapPane } = createLayout(document.querySelector<HTMLElement>("#app")!);
+const { toolbar: toolbarSlot, editorPane, mapPane } = createLayout(document.querySelector<HTMLElement>("#app")!);
 const pane = createMapPane(mapPane);
 
 function showRenderEvent(event: RenderEvent) {
@@ -18,6 +20,7 @@ function showRenderEvent(event: RenderEvent) {
       return;
     case "rendered":
       pane.showMap(event.svg, event.ms);
+      toolbar.setLastGoodMap(event.svg);
       return;
     case "render-failed":
       pane.showMessage(event.message);
@@ -32,27 +35,38 @@ function showRenderEvent(event: RenderEvent) {
 
 const renderer = createRenderClient({ onEvent: showRenderEvent });
 
-const share = createShareControl(toolbar, () => editor.text());
-
-/** The Dungeon in the URL's Permalink, if there is one and it can be read. */
-async function readPermalink(): Promise<string | null> {
+/** The URL's Permalink: its Dungeon, why it can't be opened, or null if there isn't one. */
+async function readPermalink(): Promise<string | PermalinkError | null> {
   if (!location.hash) return null;
-  try {
-    const yaml = await decodePermalink(location.hash);
-    share.clear();
-    return yaml;
-  } catch (error) {
-    share.showBadLink((error as Error).message);
-    return null;
-  }
+  return decodePermalink(location.hash).catch((error: PermalinkError) => error);
 }
 
-const initial = (await readPermalink()) ?? goblinWarren;
+const opened = await readPermalink();
+const initial = typeof opened === "string" ? opened : goblinWarren;
+
 const editor = createEditor(editorPane, initial, (text) => renderer.request(text));
+const toolbar = createToolbar(toolbarSlot, {
+  examples: bundledExamples,
+  currentYaml: () => editor.text(),
+  onLoadExample(example) {
+    editor.setText(example.yaml);
+    share.clear();
+    // The document no longer matches any Permalink. Replacing, not assigning
+    // location.hash, leaves no stray "#" and no history entry.
+    history.replaceState(null, "", location.pathname + location.search);
+  },
+});
+const share = createShareControl(toolbarSlot, () => editor.text());
+if (opened instanceof PermalinkError) share.showBadLink(opened.message);
 renderer.request(initial);
 
 // A link pasted into an open tab changes only the fragment, so the page doesn't reload.
 window.addEventListener("hashchange", async () => {
-  const yaml = await readPermalink();
-  if (yaml !== null) editor.setText(yaml);
+  const pasted = await readPermalink();
+  if (pasted instanceof PermalinkError) {
+    share.showBadLink(pasted.message);
+  } else if (pasted !== null) {
+    share.clear();
+    editor.setText(pasted);
+  }
 });

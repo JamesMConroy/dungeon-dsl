@@ -4,7 +4,7 @@ import { basicSetup, EditorView } from "codemirror";
 
 export type Editor = {
   text(): string;
-  /** Replaces the whole document; reports through onChange like any other edit. */
+  /** Replaces the whole document, as an undoable edit that reports a change. */
   setText(text: string): void;
 };
 
@@ -24,7 +24,11 @@ export function createEditor(parent: HTMLElement, doc: string, onChange: (text: 
   return {
     text: () => view.state.doc.toString(),
     setText(text) {
-      view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } });
+      view.dispatch({
+        changes: { from: 0, to: view.state.doc.length, insert: text },
+        selection: { anchor: 0 },
+        scrollIntoView: true,
+      });
     },
   };
 }

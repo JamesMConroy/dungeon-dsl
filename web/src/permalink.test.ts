@@ -1,10 +1,7 @@
-import { readdirSync, readFileSync } from "node:fs";
 import { deflateRawSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { bundledExamples } from "./examples";
 import { decodePermalink, encodePermalink, MAX_YAML_BYTES, PermalinkError } from "./permalink";
-
-const examplesDir = new URL("../../examples/", import.meta.url);
-const examples = readdirSync(examplesDir).filter((name) => name.endsWith(".yaml"));
 
 const base64url = (bytes: Buffer) => bytes.toString("base64url");
 
@@ -16,12 +13,11 @@ async function reasonFor(fragment: string) {
 
 describe("round trip", () => {
   it("finds the bundled examples", () => {
-    expect(examples).toContain("goblin_warren.yaml");
+    expect(bundledExamples.map((example) => example.name)).toContain("goblin_warren");
   });
 
-  it.each(examples)("reproduces %s verbatim", async (name) => {
-    const yaml = readFileSync(new URL(name, examplesDir), "utf8");
-
+  it.each(bundledExamples)("reproduces $name verbatim", async ({ yaml }) => {
+    expect(yaml).not.toBe("");
     expect(await decodePermalink(await encodePermalink(yaml))).toBe(yaml);
   });
 

@@ -83,7 +83,17 @@ test("a bad Permalink pasted into an open tab keeps the DM's work", async ({ pag
   await expect(editor(page)).toContainText('name: "Grand Hall Annex"');
 });
 
-test("Share warns when the link is too long for chat apps", async ({ page, context }) => {
+test("loading an example dismisses a bad Permalink's message", async ({ page }) => {
+  await page.goto("./#2.abcd");
+  await expect(status(page)).toHaveAttribute("data-state", "bad-link");
+
+  await page.getByLabel("Load example").selectOption("size_test");
+
+  await expect(status(page)).toBeEmpty();
+  await expect(page).toHaveURL(/\/dungeon-dsl\/$/);
+});
+
+test("Share warns when the link is too long for chat apps",async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   // Hex digits barely compress, which keeps the link long.
   const padded = `${goblinWarren}# ${randomBytes(2500).toString("hex")}\n`;

@@ -36,9 +36,25 @@ body {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 6px 12px;
   background: var(--paper);
+}
+
+.toolbar select,
+.toolbar button {
+  padding: 3px 10px;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.toolbar button:disabled {
+  border-color: var(--rule);
+  color: var(--ink-2);
 }
 
 .share-status {
