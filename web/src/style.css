@@ -129,6 +129,15 @@ body {
   color: var(--err);
 }
 
+.problem-list button[data-severity="warning"] .problem-line {
+  color: var(--warn);
+}
+
+/* CodeMirror's own Warning underline is orange. */
+.cm-editor .cm-content .cm-lintRange-warning {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="6" height="3"><path d="m0 2.5 l2 -1.5 l1 0 l2 1.5 l1 0" stroke="%23d9b800" fill="none" stroke-width="1"/></svg>');
+}
+
 .problem-line {
   font-weight: bold;
 }

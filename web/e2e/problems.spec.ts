@@ -92,15 +92,60 @@ test("a door to an unknown room is one Error on its target, and fixing it recove
 
   await replaceValue(page, "target", "corridor_north", "nowhere");
 
+  const problemErrors = problems(page).and(page.locator('[data-severity="error"]'));
   await expect(errors(page)).toHaveText("nowhere");
-  await expect(problems(page)).toHaveCount(1);
-  await expect(problems(page)).toHaveAttribute("data-code", "door.unknown_target");
+  await expect(problemErrors).toHaveCount(1);
+  await expect(problemErrors).toHaveAttribute("data-code", "door.unknown_target");
   await expect(mapPane(page)).toHaveAttribute("data-state", "invalid");
 
   await replaceValue(page, "target", "nowhere", "corridor_north");
 
   await expect(mapPane(page)).toHaveAttribute("data-state", "ready");
   await expect(problems(page)).toHaveCount(0);
+});
+
+/** Hue in degrees of the stroke in an underline drawn as an inline SVG background. */
+function underlineHue(backgroundImage: string): number {
+  const stroke = decodeURIComponent(backgroundImage).match(/stroke=\\?["']#?(\w+)/)?.[1];
+  if (!stroke || !/^[0-9a-f]{6}$/i.test(stroke)) throw new Error(`no hex stroke in ${backgroundImage}`);
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(stroke.slice(i, i + 2), 16));
+  const max = Math.max(r, g, b);
+  const delta = max - Math.min(r, g, b);
+  if (max !== r || delta === 0) throw new Error(`not a warm colour: ${stroke}`);
+  return (60 * (g - b)) / delta;
+}
+
+test("a One-way Door is a yellow underline and the map stays drawn", async ({ page }) => {
+  await waitForFirstMap(page);
+
+  await page.locator(".cm-content").click();
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.keyboard.insertText(`name: One-way
+rooms:
+  - id: hall
+    name: Hall
+    entrance: true
+    exits:
+      - { target: pit, direction: e }
+  - id: pit
+    name: Pit
+`);
+
+  const warning = page.locator(".cm-lintRange-warning");
+  await expect(warning).toHaveText("pit");
+  await expect(errors(page)).toHaveCount(0);
+  const hue = underlineHue(await warning.evaluate((el) => getComputedStyle(el).backgroundImage));
+  expect(hue).toBeGreaterThan(45);
+  expect(hue).toBeLessThan(65);
+
+  await expect(problems(page)).toHaveCount(1);
+  await expect(problems(page)).toHaveAttribute("data-severity", "warning");
+  await expect(problems(page)).toHaveAttribute("data-code", "door.one_way");
+
+  await expect(mapPane(page)).toHaveAttribute("data-state", "ready");
+  await expect(dungeonMap(page).locator(".room")).toHaveCount(2);
+  await expect(page.getByTestId("map-banner")).toBeHidden();
+  await expect(dungeonMap(page)).toHaveCSS("filter", "none");
 });
 
 test("underlines land on the right characters after an emoji", async ({ page }) => {
