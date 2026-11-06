@@ -2,15 +2,15 @@ list:
   just -l
 
 examples format="svg":
-  for e in examples/*.yaml ; do uv run main.py $e -f {{format}} > ${e%%\.*}.svg ; done
+  for e in examples/*.yaml ; do uv run dungeon-dsl $e -f {{format}} > ${e%%\.*}.svg ; done
 
 
 example-svg:
-  uv run main.py examples/goblin_warren.yaml -f svg > out.svg
+  uv run dungeon-dsl examples/goblin_warren.yaml -f svg > out.svg
 
 flowchart-ascii:
-  uv run main.py examples/goblin_warren.yaml | mermaid-ascii -
+  uv run dungeon-dsl examples/goblin_warren.yaml | mermaid-ascii -
 
 flowchart-png:
-  uv run main.py examples/goblin_warren.yaml | mise exec -- mmdc -i - -o out.png -b white
+  uv run dungeon-dsl examples/goblin_warren.yaml | mise exec -- mmdc -i - -o out.png -b white
 
