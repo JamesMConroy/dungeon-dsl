@@ -2,6 +2,7 @@
 gh = "latest"
 hk = "latest"
 just = "latest"
+node = "26.13.0"
 mermaid-ascii = "latest"
 "npm:@mermaid-js/mermaid-cli" = "latest"
 uv = "latest"

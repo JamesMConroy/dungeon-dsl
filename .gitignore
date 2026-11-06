@@ -10,3 +10,10 @@ wheels/
 .venv
 
 *.svg
+
+# Playground
+node_modules/
+web/.env.local
+web/public/py/
+web/test-results/
+web/playwright-report/

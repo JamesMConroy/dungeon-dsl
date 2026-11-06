@@ -28,3 +28,25 @@ test:
 # Exercises the lower bounds in pyproject.toml, including the pydantic 2.12 line Pyodide ships.
 test-lowest:
   uv run --isolated --resolution lowest-direct pytest
+
+web-install:
+  npm --prefix web ci
+
+# Wheel at a content-hashed path, then the site, into web/dist.
+web-build: web-install
+  node web/scripts/stage-wheel.mjs
+  npm --prefix web run build
+
+web-dev: web-install
+  node web/scripts/stage-wheel.mjs
+  npm --prefix web run dev
+
+# Corp laptop: Playwright and Pyodide downloads may need
+# NODE_EXTRA_CA_CERTS=/opt/netskope/netskope-cert-bundle.pem (Netskope TLS interception).
+# CI passes --with-deps.
+web-browsers *args:
+  npm --prefix web exec -- playwright install chromium {{args}}
+
+# Smoke test against `vite preview`; run web-build first.
+web-test:
+  npm --prefix web run test:e2e
