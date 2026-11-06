@@ -11,14 +11,14 @@ from dungeon_dsl.svg import render_svg
 app = typer.Typer()
 
 
-class Renderers(str, Enum):
-    mermaid = ("mermaid",)
-    svg = ("svg",)
+class OutputFormat(str, Enum):
+    mermaid = "mermaid"
+    svg = "svg"
 
 
 RENDERERS = {
-    "mermaid": render_mermaid,
-    "svg": render_svg,
+    OutputFormat.mermaid: render_mermaid,
+    OutputFormat.svg: render_svg,
 }
 
 
@@ -35,11 +35,11 @@ def format_problem(filename: str, problem: Problem) -> str:
 @app.command()
 def main(
     dungeon: Annotated[
-        typer.FileText, typer.Argument(help="The dungon file to render.")
+        typer.FileText, typer.Argument(help="The dungeon file to render.")
     ],
     format: Annotated[
-        Renderers, typer.Option("--format", "-f", help="The format to output.")
-    ] = Renderers.mermaid,
+        OutputFormat, typer.Option("--format", "-f", help="The format to output.")
+    ] = OutputFormat.mermaid,
     as_json: Annotated[
         bool, typer.Option("--json", help="Output the load Result as JSON.")
     ] = False,
