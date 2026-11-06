@@ -149,13 +149,24 @@ CRYPT_JOINED_TO_VAULT = """\
             + "      - target: hall\n        direction: n\n",
             ["hall", "cell"],
         ),
+        # A second entrance, joined to nothing.
+        (
+            HALL + "  - id: side\n    name: Side\n    entrance: true\n",
+            ["hall", "side"],
+        ),
         # Isolated, with a one-way Door into the rest of the Dungeon.
         (
             HALL + VAULT + "    exits:\n      - target: hall\n        direction: n\n",
             ["hall", "vault"],
         ),
     ],
-    ids=["lone isolated", "joined isolated", "door out only", "isolated door out"],
+    ids=[
+        "lone isolated",
+        "joined isolated",
+        "door out only",
+        "second entrance",
+        "isolated door out",
+    ],
 )
 def test_rooms_the_entrance_has_no_door_to_still_get_their_room_group(
     text: str, ids: list[str]

@@ -48,8 +48,9 @@ def compute_layout(dungeon: Dungeon) -> Layout:
 
     _place_through_doors(entrance, dungeon, by_id, placements, edges)
 
-    # Rooms no Door leads to from the entrance: isolated ones, and ones joined only
-    # by their own one-way Door. Each starts its own group on a fresh row below.
+    # Rooms no Door leads to from the first entrance: isolated ones, later entrances,
+    # and ones joined only by their own one-way Door. Each starts its own group on a
+    # fresh row below.
     for room in dungeon.rooms:
         if room.id not in placements:
             x = min(p.x for p in placements.values())

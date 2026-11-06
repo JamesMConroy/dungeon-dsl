@@ -18,6 +18,16 @@ async function waitForFirstMap(page: Page) {
   await expect(dungeonMap(page).locator("svg")).toContainText("Grand Hall");
 }
 
+test("a character SVG can't hold is a Problem on that text, and the map stays the last good one", async ({ page }) => {
+  await waitForFirstMap(page);
+
+  await replaceValue(page, "theme", "\"goblin_lair\"", "\"x\\x01y\"");
+
+  await expect(problems(page)).toHaveAttribute("data-code", "text.invalid_character");
+  await expect(mapPane(page)).toHaveAttribute("data-state", "invalid");
+  await expect(dungeonMap(page).locator("svg")).toContainText("Grand Hall");
+});
+
 test("a value YAML can't construct is a Problem on that value, not a failed render", async ({ page }) => {
   await waitForFirstMap(page);
 

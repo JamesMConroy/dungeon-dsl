@@ -11,13 +11,13 @@ DoorType = Literal["wooden", "stone", "iron", "secret", "archway"]
 DoorState = Literal["open", "closed", "locked", "barred"]
 
 
-class _ClosedModel(BaseModel):
+class ClosedModel(BaseModel):
     """Rejects keys it doesn't declare, so a misspelled key is a Problem."""
 
     model_config = ConfigDict(extra="forbid")
 
 
-class Door(_ClosedModel):
+class Door(ClosedModel):
     target: str
     direction: Direction
     type: DoorType = "wooden"
@@ -25,7 +25,7 @@ class Door(_ClosedModel):
     dc: int | None = None
 
 
-class Room(_ClosedModel):
+class Room(ClosedModel):
     id: str
     name: str
     description: str = ""
@@ -37,7 +37,7 @@ class Room(_ClosedModel):
     exits: list[Door] = Field(default_factory=list)
 
 
-class Dungeon(_ClosedModel):
+class Dungeon(ClosedModel):
     name: str
     level: int | None = None
     theme: str | None = None

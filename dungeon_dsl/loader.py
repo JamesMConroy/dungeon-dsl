@@ -7,17 +7,21 @@ pydantic structure, then the dungeon-level rules in `check` (ADR 0001).
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import ValidationError
 from yaml.error import Mark
 from yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode
 from yaml.reader import ReaderError
 
-from dungeon_dsl.models import Dungeon
+from dungeon_dsl.models import ClosedModel, Dungeon
 
 _LINE_BREAK = re.compile("\r\n|[\r\n\x85  ]")
+
+# What XML 1.0 can't hold, escaped or not. YAML's escapes let all of it through.
+_NOT_XML_TEXT = re.compile("[^\t\n\r\x20-\ud7ff\ue000-\ufffd\U00010000-\U0010ffff]")
 
 # These Problems are about the key itself, so its value's position would mislead.
 _ANCHORED_ON_KEY = {
@@ -27,27 +31,21 @@ _ANCHORED_ON_KEY = {
 }
 
 
-class Position(BaseModel):
+class Position(ClosedModel):
     """Line and column, both 1-based. Columns count code points."""
-
-    model_config = ConfigDict(extra="forbid")
 
     line: int
     col: int
 
 
-class Span(BaseModel):
+class Span(ClosedModel):
     """The end position is exclusive."""
-
-    model_config = ConfigDict(extra="forbid")
 
     start: Position
     end: Position
 
 
-class Problem(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class Problem(ClosedModel):
     severity: Literal["error", "warning"]
     code: str
     message: str
@@ -55,10 +53,8 @@ class Problem(BaseModel):
     span: Span | None = None
 
 
-class Result(BaseModel):
+class Result(ClosedModel):
     """`dungeon` is None whenever `problems` holds an Error."""
-
-    model_config = ConfigDict(extra="forbid")
 
     dungeon: Dungeon | None
     problems: list[Problem]
@@ -88,8 +84,8 @@ def load(text: str) -> Result:
 def check(dungeon: Dungeon) -> list[Problem]:
     """The dungeon-level rules. Set each Problem's `loc`; `load` finds its span."""
     problems: list[Problem] = []
-    entrance = next((room.id for room in dungeon.rooms if room.entrance), None)
-    if entrance is None:
+    entrances = [room.id for room in dungeon.rooms if room.entrance]
+    if not entrances:
         problems.append(
             _error(
                 "dungeon.no_entrance",
@@ -100,7 +96,7 @@ def check(dungeon: Dungeon) -> list[Problem]:
 
     known_ids = {room.id for room in dungeon.rooms}
     # No entrance is already one Problem, so don't also call every Room unreachable.
-    reachable = known_ids if entrance is None else _reachable_from(entrance, dungeon)
+    reachable = _reachable_from(entrances, dungeon) if entrances else known_ids
     # Keyed by id, so Rooms that share an id share their Doors: the duplicate id is
     # already an Error, and a Warning on top of it would be noise.
     links = {(room.id, door.target) for room in dungeon.rooms for door in room.exits}
@@ -140,11 +136,32 @@ def check(dungeon: Dungeon) -> list[Problem]:
                         ["rooms", index, "exits", door_index, "target"],
                     )
                 )
+    for loc, text in _text_fields(dungeon):
+        if _NOT_XML_TEXT.search(text):
+            problems.append(
+                _error(
+                    "text.invalid_character",
+                    "this text has a character the map can't hold",
+                    loc,
+                )
+            )
     return problems
 
 
-def _reachable_from(entrance: str, dungeon: Dungeon) -> set[str]:
-    """Room ids connected to the entrance. A Door connects both ways, if it leads anywhere."""
+def _text_fields(dungeon: Dungeon) -> Iterator[tuple[list[str | int], str]]:
+    """Free text only: a Door's target has to match a Room id to mean anything."""
+    yield ["name"], dungeon.name
+    if dungeon.theme is not None:
+        yield ["theme"], dungeon.theme
+    for index, room in enumerate(dungeon.rooms):
+        yield ["rooms", index, "id"], room.id
+        yield ["rooms", index, "name"], room.name
+        yield ["rooms", index, "description"], room.description
+        yield ["rooms", index, "terrain"], room.terrain
+
+
+def _reachable_from(entrances: list[str], dungeon: Dungeon) -> set[str]:
+    """Room ids connected to an entrance. A Door connects both ways, if it leads anywhere."""
     neighbors: dict[str, set[str]] = {room.id: set() for room in dungeon.rooms}
     for room in dungeon.rooms:
         for door in room.exits:
@@ -152,8 +169,8 @@ def _reachable_from(entrance: str, dungeon: Dungeon) -> set[str]:
                 neighbors[room.id].add(door.target)
                 neighbors[door.target].add(room.id)
 
-    reachable = {entrance}
-    stack = [entrance]
+    reachable = set(entrances)
+    stack = list(entrances)
     while stack:
         for neighbor in neighbors[stack.pop()] - reachable:
             reachable.add(neighbor)
