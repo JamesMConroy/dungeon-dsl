@@ -117,5 +117,5 @@ test("Share still offers the link when the clipboard refuses", async ({ page }) 
   await page.getByTestId("share-button").click();
 
   await expect(status(page)).toHaveAttribute("data-state", "copy-failed");
-  await expect(page.getByTestId("share-link")).toHaveValue(/#1\.[A-Za-z0-9_-]+$/);
+  await expect(page.getByTestId("permalink-field")).toHaveValue(/#1\.[A-Za-z0-9_-]+$/);
 });

@@ -84,7 +84,7 @@ test("clicking a Room shows its card", async ({ page }) => {
   await expect(card(page).getByTestId("room-doors-in")).toHaveCount(0);
 });
 
-test("exit links switch the card, and the selected Room follows", async ({ page }) => {
+test("Door links switch the card, and the selected Room follows", async ({ page }) => {
   await room(page, "entrance").click();
 
   await card(page).getByRole("button", { name: "2. North Passage" }).click();

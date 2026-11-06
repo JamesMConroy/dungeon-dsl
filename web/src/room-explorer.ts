@@ -19,19 +19,19 @@ export function createRoomExplorer(
   let dungeon: DungeonData | null = null;
   let selectedId: string | null = null;
 
-  const hooksFor = (roomId: string) => map.querySelectorAll(`[data-room-id="${CSS.escape(roomId)}"]`);
+  const elementsOfRoom = (roomId: string) => map.querySelectorAll(`[data-room-id="${CSS.escape(roomId)}"]`);
 
   const roomIdAt = (target: EventTarget | null) =>
     (target as Element).closest<SVGElement>("[data-room-id]")?.dataset.roomId;
 
   function setHighlight(target: EventTarget | null, on: boolean) {
     const roomId = roomIdAt(target);
-    if (roomId !== undefined) hooksFor(roomId).forEach((hook) => hook.classList.toggle("highlighted", on));
+    if (roomId !== undefined) elementsOfRoom(roomId).forEach((element) => element.classList.toggle("highlighted", on));
   }
 
   function paintSelection() {
-    map.querySelectorAll(".selected").forEach((hook) => hook.classList.remove("selected"));
-    if (selectedId !== null) hooksFor(selectedId).forEach((hook) => hook.classList.add("selected"));
+    map.querySelectorAll(".selected").forEach((element) => element.classList.remove("selected"));
+    if (selectedId !== null) elementsOfRoom(selectedId).forEach((element) => element.classList.add("selected"));
 
     const room = dungeon?.rooms.find((r) => r.id === selectedId);
     if (dungeon && room) cardHost.replaceChildren(renderRoomCard(dungeon, room, select));

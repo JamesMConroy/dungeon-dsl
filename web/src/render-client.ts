@@ -16,14 +16,8 @@ export type RenderClient = {
   request(text: string): void;
 };
 
-export type RenderClientOptions = {
-  onEvent(event: RenderEvent): void;
-  debounceMs?: number;
-  watchdogMs?: number;
-  spawnWorker?: () => Worker;
-};
-
-const spawnRenderWorker = () => new Worker(new URL("./render.worker.ts", import.meta.url), { type: "module" });
+const DEBOUNCE_MS = 150;
+const WATCHDOG_MS = 2000;
 
 function toEvent(message: Extract<WorkerMessage, { seq: number }>): RenderEvent {
   switch (message.type) {
@@ -36,12 +30,7 @@ function toEvent(message: Extract<WorkerMessage, { seq: number }>): RenderEvent 
   }
 }
 
-export function createRenderClient({
-  onEvent,
-  debounceMs = 150,
-  watchdogMs = 2000,
-  spawnWorker = spawnRenderWorker,
-}: RenderClientOptions): RenderClient {
+export function createRenderClient(onEvent: (event: RenderEvent) => void): RenderClient {
   let worker: Worker;
   let ready = false;
   let latestSeq = 0;
@@ -54,7 +43,7 @@ export function createRenderClient({
     ready = false;
     inFlightSeq = null;
     onEvent({ kind: "loading" });
-    const spawned = spawnWorker();
+    const spawned = new Worker(new URL("./render.worker.ts", import.meta.url), { type: "module" });
     worker = spawned;
     spawned.onmessage = (event: MessageEvent<WorkerMessage>) => handleMessage(event.data);
     spawned.onerror = (event) => {
@@ -81,7 +70,7 @@ export function createRenderClient({
     inFlightSeq = waiting.seq;
     worker.postMessage(waiting);
     waiting = null;
-    watchdogTimer = setTimeout(() => replaceWorker({ kind: "timed-out" }), watchdogMs);
+    watchdogTimer = setTimeout(() => replaceWorker({ kind: "timed-out" }), WATCHDOG_MS);
   }
 
   function handleMessage(message: WorkerMessage) {
@@ -111,7 +100,7 @@ export function createRenderClient({
       debounceTimer = setTimeout(() => {
         waiting = { seq: ++latestSeq, text };
         sendWaiting();
-      }, debounceMs);
+      }, DEBOUNCE_MS);
     },
   };
 }

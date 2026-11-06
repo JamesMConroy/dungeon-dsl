@@ -75,7 +75,7 @@ body {
   color: var(--err);
 }
 
-.share-link {
+.permalink-field {
   flex: 1;
   min-width: 0;
   font: 12px ui-monospace, monospace;
@@ -294,7 +294,7 @@ body {
   flex-wrap: wrap;
 }
 
-[data-layout="map-first"] .share-link {
+[data-layout="map-first"] .permalink-field {
   flex-basis: 100%;
 }
 

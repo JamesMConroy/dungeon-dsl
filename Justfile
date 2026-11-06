@@ -32,7 +32,7 @@ test-lowest:
 web-install:
   npm --prefix web ci
 
-# Wheel at a content-hashed path and the JSON Schema, then the site, into web/dist.
+# Wheel at a content-hashed path and the JSON Schema, then the Playground, into web/dist.
 web-build: web-install
   node web/scripts/stage-wheel.mjs
   npm --prefix web run build

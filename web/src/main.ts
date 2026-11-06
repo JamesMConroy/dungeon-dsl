@@ -63,7 +63,7 @@ function showRenderEvent(event: RenderEvent) {
   }
 }
 
-const renderer = createRenderClient({ onEvent: showRenderEvent });
+const renderer = createRenderClient(showRenderEvent);
 
 /** The URL's Permalink: its Dungeon, why it can't be opened, or null if there isn't one. */
 async function readPermalink(): Promise<string | PermalinkError | null> {

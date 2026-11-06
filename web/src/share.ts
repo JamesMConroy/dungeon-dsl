@@ -22,11 +22,11 @@ export function createShareControl(parent: HTMLElement, currentYaml: () => strin
 
   // Only shown when the clipboard refuses, so the link can still be copied by hand.
   const manualCopy = document.createElement("input");
-  manualCopy.className = "share-link";
+  manualCopy.className = "permalink-field";
   manualCopy.readOnly = true;
   manualCopy.hidden = true;
   manualCopy.setAttribute("aria-label", "Permalink");
-  manualCopy.dataset.testid = "share-link";
+  manualCopy.dataset.testid = "permalink-field";
 
   parent.append(button, status, manualCopy);
 
@@ -59,13 +59,13 @@ export function createShareControl(parent: HTMLElement, currentYaml: () => strin
     status.dataset.linkLength = String(link.length);
     const tooLong = link.length > LONG_LINK_CHARS;
     if (tooLong) status.dataset.tooLong = "true";
-    const warning = tooLong ? ` Too long for Discord, which allows ${LONG_LINK_CHARS} in a message.` : "";
+    const lengthNote = tooLong ? ` Too long for Discord, which allows ${LONG_LINK_CHARS} in a message.` : "";
 
     try {
       await navigator.clipboard.writeText(link);
-      report("copied", `Link copied: ${link.length} characters.${warning}`);
+      report("copied", `Link copied: ${link.length} characters.${lengthNote}`);
     } catch {
-      report("copy-failed", `Couldn't reach the clipboard. Copy this ${link.length}-character link:${warning}`);
+      report("copy-failed", `Couldn't reach the clipboard. Copy this ${link.length}-character link:${lengthNote}`);
       manualCopy.value = link;
       manualCopy.hidden = false;
       manualCopy.select();

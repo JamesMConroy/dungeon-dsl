@@ -69,6 +69,20 @@ def test_problems_are_printed_for_editors_and_dumped_as_json(tmp_path: Path) -> 
     assert json.loads(valid.stdout)["dungeon"]["name"] == "Goblin Warren"
 
 
+def test_a_value_yaml_cannot_construct_is_reported_without_a_traceback(
+    tmp_path: Path,
+) -> None:
+    broken = tmp_path / "broken.yaml"
+    broken.write_text("name: 2000-13-45\nrooms: []\n", encoding="utf-8")
+
+    printed = dungeon_dsl(str(broken))
+
+    assert printed.returncode == 1
+    assert "Traceback" not in printed.stderr
+    assert f"{broken}:1:7: error:" in printed.stderr
+    assert "[yaml.invalid_value]" in printed.stderr
+
+
 def test_warnings_fail_only_under_strict(tmp_path: Path) -> None:
     one_way = tmp_path / "one_way.yaml"
     one_way.write_text(

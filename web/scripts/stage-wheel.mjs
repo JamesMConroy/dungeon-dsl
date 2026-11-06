@@ -1,7 +1,7 @@
 // Builds our wheel and stages it at a content-hashed path under public/, so a
 // new deploy can never pair fresh page code with a stale cached package. The
 // file keeps its wheel name because Pyodide's loadPackage parses it.
-// The path reaches the app as VITE_WHEEL_URL, through a gitignored .env.local.
+// The path reaches the Playground as VITE_WHEEL_URL, through a gitignored .env.local.
 // Also generates the models' JSON Schema, which the editor's autocomplete bundles.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";

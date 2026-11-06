@@ -1,5 +1,6 @@
 """The load(text) seam: YAML in, (code, severity, line) out. Never message text."""
 
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
@@ -501,3 +502,163 @@ def test_a_broken_door_is_no_way_back_for_the_door_it_was_meant_to_answer() -> N
         ("door.unknown_target", "error", 8),
         ("door.one_way", "warning", 13),
     ]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "2000-13-45",
+        "!!int foo",
+        "!!int ''",
+        "!!float foo",
+        "!!float ''",
+        "!!bool foo",
+        "!!timestamp foo",
+        "2000-01-01 00:00:00 +99:99",
+        "1" * 5000,
+        ":".join(["1"] * 400) + ".5",
+    ],
+)
+def test_a_value_yaml_cannot_construct_is_a_problem_on_that_value(value: str) -> None:
+    text = VALID.replace("name: Cell", f"name: {value}")
+
+    result = load(text)
+
+    assert outcome(text) == [("yaml.invalid_value", "error", 11)]
+    assert result.dungeon is None
+    assert span_of(text) == (11, 11, 11, 11 + len(value))
+
+
+def test_a_key_yaml_cannot_construct_is_a_problem_on_that_key() -> None:
+    text = "name: Test\n2000-13-45: oops\n"
+
+    assert span_of(text) == (2, 1, 2, 11)
+    assert outcome(text) == [("yaml.invalid_value", "error", 2)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        'name: "\\UFFFFFFFF"\n',
+        "%YAML " + "9" * 5000 + ".1\n---\nname: x\n",
+    ],
+)
+def test_text_that_breaks_pyyaml_before_any_value_exists_is_a_syntax_problem(
+    text: str,
+) -> None:
+    assert outcome(text) == [("yaml.syntax", "error", 1)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "!!int foo",
+        "? !!bool foo\n: x\n",
+        "- 2000-13-45\n",
+        "&a {<<: *a}\n",
+        "&a {*a : x}\n",
+        "&a !!set {*a}\n",
+        "1.5: x\n",
+        "~: x\n",
+        "2000-01-01: x\n",
+        "? !!binary /w==\n: x\n",
+        "name: !!binary /w==\nrooms: []\n",
+        'name: "\\uD800"\nrooms: []\n',
+        "\x00",
+    ],
+)
+def test_load_never_raises_and_a_broken_dungeon_is_never_returned(text: str) -> None:
+    result = load(text)
+
+    assert result.dungeon is None
+    assert any(problem.severity == "error" for problem in result.problems)
+
+
+SECOND_ENTRANCE = """\
+  - id: side
+    name: Side
+    entrance: true
+"""
+
+
+def test_a_disconnected_second_entrance_is_valid() -> None:
+    result = load(VALID + SECOND_ENTRANCE)
+
+    assert result.problems == []
+    assert result.dungeon is not None
+
+
+def test_a_room_behind_a_second_entrance_is_reachable() -> None:
+    door_to_side = "    exits:\n      - target: side\n        direction: e\n"
+    text = (
+        VALID
+        + "  - id: annex\n    name: Annex\n"
+        + door_to_side
+        + SECOND_ENTRANCE
+        + "    exits:\n      - target: annex\n        direction: w\n"
+    )
+
+    assert outcome(text) == []
+
+
+def test_a_room_neither_entrance_can_reach_is_still_an_error() -> None:
+    text = VALID + SECOND_ENTRANCE + "  - id: lost\n    name: Lost\n"
+
+    assert outcome(text) == [("room.unreachable", "error", 18)]
+
+
+def field_set_to(field: str, value: str) -> str:
+    """A one-Room Dungeon, with `field` holding `value`, and that field on line 7."""
+    fields = {"id": "a", "name": "A", "description": "", "terrain": ""}
+    dungeon_name = value if field == "dungeon name" else "D"
+    theme = value if field == "theme" else "t"
+    if field in fields:
+        fields[field] = value
+    return (
+        f"name: {dungeon_name}\n"
+        f"theme: {theme}\n"
+        "rooms:\n"
+        f"  - id: {fields['id']}\n"
+        f"    name: {fields['name']}\n"
+        "    entrance: true\n"
+        f"    description: {fields['description'] or 'x'}\n"
+        f"    terrain: {fields['terrain'] or 'x'}\n"
+    )
+
+
+FORBIDDEN_IN_XML = ["\\0", "\\x01", "\\x0b", "\\x1f", "\\uFFFE", "\\uFFFF", "\\uD800"]
+
+
+@pytest.mark.parametrize(
+    ("field", "line"),
+    [
+        ("dungeon name", 1),
+        ("theme", 2),
+        ("id", 4),
+        ("name", 5),
+        ("description", 7),
+        ("terrain", 8),
+    ],
+)
+@pytest.mark.parametrize("escape", FORBIDDEN_IN_XML)
+def test_a_character_svg_cannot_hold_is_an_error_on_that_text(
+    escape: str, field: str, line: int
+) -> None:
+    text = field_set_to(field, f'"x{escape}y"')
+
+    assert outcome(text) == [("text.invalid_character", "error", line)]
+    assert load(text).dungeon is None
+
+
+@pytest.mark.parametrize(
+    "escape", ["\\t", "\\n", "\\r", "\\x7f", "\\x85", "\\U0001F409"]
+)
+@pytest.mark.parametrize("field", ["dungeon name", "id", "name"])
+def test_a_character_svg_can_hold_draws_a_well_formed_map(
+    escape: str, field: str
+) -> None:
+    result = load(field_set_to(field, f'"x{escape}y"'))
+
+    assert result.problems == []
+    assert result.dungeon is not None
+    ET.fromstring(render_svg(result.dungeon))

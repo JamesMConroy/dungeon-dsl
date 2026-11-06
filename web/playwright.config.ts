@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-// Runs against the built site, so `just web-build` must have run first.
+// Runs against the built Playground, so `just web-build` must have run first.
 const port = process.env.PW_PORT ?? "4173";
 
 export default defineConfig({

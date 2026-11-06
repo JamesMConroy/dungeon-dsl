@@ -25,8 +25,8 @@ export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement, onV
   let view: string | null = null;
 
   const pointers = new Map<number, Point>();
-  let dragging = false;
-  let dragged = false;
+  let dragInProgress = false;
+  let swallowNextClick = false;
 
   const svg = () => map.querySelector("svg");
 
@@ -71,9 +71,9 @@ export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement, onV
   function movePointer(pointerId: number, to: Point) {
     const from = pointers.get(pointerId);
     if (!from) return;
-    if (!dragging) {
+    if (!dragInProgress) {
       if (pointers.size < 2 && distance(from, to) < DRAG_THRESHOLD_PX) return;
-      dragging = dragged = true;
+      dragInProgress = swallowNextClick = true;
       map.dataset.dragging = "";
     }
     // Only now: capturing at the press would retarget a plain click away from its Room.
@@ -95,14 +95,14 @@ export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement, onV
   function releasePointer(event: PointerEvent) {
     pointers.delete(event.pointerId);
     if (pointers.size === 0) {
-      dragging = false;
+      dragInProgress = false;
       delete map.dataset.dragging;
     }
   }
 
   map.addEventListener("pointerdown", (event) => {
     if (event.button !== 0) return;
-    if (pointers.size === 0) dragged = false;
+    if (pointers.size === 0) swallowNextClick = false;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
   });
   window.addEventListener("pointermove", (event) => movePointer(event.pointerId, { x: event.clientX, y: event.clientY }));
@@ -113,8 +113,8 @@ export function createPanZoom(map: HTMLElement, controlsParent: HTMLElement, onV
   map.addEventListener(
     "click",
     (event) => {
-      if (dragged) event.stopImmediatePropagation();
-      dragged = false;
+      if (swallowNextClick) event.stopImmediatePropagation();
+      swallowNextClick = false;
     },
     { capture: true },
   );
