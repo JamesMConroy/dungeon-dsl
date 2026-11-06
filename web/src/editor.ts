@@ -6,7 +6,10 @@ import type { Text } from "@codemirror/state";
 import { basicSetup, EditorView } from "codemirror";
 import type { Position, Problem } from "./render-protocol";
 
-export type EditorHandle = {
+export type Editor = {
+  text(): string;
+  /** Replaces the whole document, as an undoable edit that reports a change. */
+  setText(text: string): void;
   /** Underlines these Problems, replacing any shown before. */
   showProblems(problems: Problem[]): void;
   /** Moves the cursor to the Problem and scrolls it into view. */
@@ -32,7 +35,7 @@ function rangeOf(doc: Text, problem: Problem): { from: number; to: number } {
   return { from: Math.max(line.from, from - 1), to: from };
 }
 
-export function createEditor(parent: HTMLElement, doc: string, onChange: (text: string) => void): EditorHandle {
+export function createEditor(parent: HTMLElement, doc: string, onChange: (text: string) => void): Editor {
   const view = new EditorView({
     parent,
     doc,
@@ -47,6 +50,14 @@ export function createEditor(parent: HTMLElement, doc: string, onChange: (text: 
   });
 
   return {
+    text: () => view.state.doc.toString(),
+    setText(text) {
+      view.dispatch({
+        changes: { from: 0, to: view.state.doc.length, insert: text },
+        selection: { anchor: 0 },
+        scrollIntoView: true,
+      });
+    },
     showProblems(problems) {
       const diagnostics = problems.map(
         (problem): Diagnostic => ({
