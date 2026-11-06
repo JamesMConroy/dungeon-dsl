@@ -501,3 +501,73 @@ def test_a_broken_door_is_no_way_back_for_the_door_it_was_meant_to_answer() -> N
         ("door.unknown_target", "error", 8),
         ("door.one_way", "warning", 13),
     ]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "2000-13-45",
+        "!!int foo",
+        "!!int ''",
+        "!!float foo",
+        "!!float ''",
+        "!!bool foo",
+        "!!timestamp foo",
+        "2000-01-01 00:00:00 +99:99",
+        "1" * 5000,
+        ":".join(["1"] * 400) + ".5",
+    ],
+)
+def test_a_value_yaml_cannot_construct_is_a_problem_on_that_value(value: str) -> None:
+    text = VALID.replace("name: Cell", f"name: {value}")
+
+    result = load(text)
+
+    assert outcome(text) == [("yaml.invalid_value", "error", 11)]
+    assert result.dungeon is None
+    assert span_of(text) == (11, 11, 11, 11 + len(value))
+
+
+def test_a_key_yaml_cannot_construct_is_a_problem_on_that_key() -> None:
+    text = "name: Test\n2000-13-45: oops\n"
+
+    assert span_of(text) == (2, 1, 2, 11)
+    assert outcome(text) == [("yaml.invalid_value", "error", 2)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        'name: "\\UFFFFFFFF"\n',
+        "%YAML " + "9" * 5000 + ".1\n---\nname: x\n",
+    ],
+)
+def test_text_that_breaks_pyyaml_before_any_value_exists_is_a_syntax_problem(
+    text: str,
+) -> None:
+    assert outcome(text) == [("yaml.syntax", "error", 1)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "!!int foo",
+        "? !!bool foo\n: x\n",
+        "- 2000-13-45\n",
+        "&a {<<: *a}\n",
+        "&a {*a : x}\n",
+        "&a !!set {*a}\n",
+        "1.5: x\n",
+        "~: x\n",
+        "2000-01-01: x\n",
+        "? !!binary /w==\n: x\n",
+        "name: !!binary /w==\nrooms: []\n",
+        'name: "\\uD800"\nrooms: []\n',
+        "\x00",
+    ],
+)
+def test_load_never_raises_and_a_broken_dungeon_is_never_returned(text: str) -> None:
+    result = load(text)
+
+    assert result.dungeon is None
+    assert any(problem.severity == "error" for problem in result.problems)
